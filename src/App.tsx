@@ -1,6 +1,7 @@
 import CssBaseline from '@mui/material/CssBaseline'
 import { ThemeProvider } from '@mui/material/styles'
 import { Navigate, Route, Routes } from 'react-router'
+import BlogDetailPage from './pages/BlogDetailPage'
 import BlogListPage from './pages/BlogListPage'
 import { theme } from './theme'
 import './App.css'
@@ -12,6 +13,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Navigate to="/blog" replace />} />
         <Route path="/blog" element={<BlogListPage />} />
+        <Route path="/blog/:slug" element={<BlogDetailPage />} />
         <Route path="*" element={<Navigate to="/blog" replace />} />
       </Routes>
     </ThemeProvider>
