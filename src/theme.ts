@@ -16,19 +16,6 @@ export const theme = createTheme({
         divider: '#e5e4e7',
       },
     },
-    dark: {
-      palette: {
-        primary: {
-          main: '#c084fc',
-          light: '#d8b4fe',
-          dark: '#a855f7',
-          contrastText: '#08060d',
-        },
-        background: { default: '#16171d', paper: '#1f2028' },
-        text: { primary: '#f3f4f6', secondary: '#9ca3af' },
-        divider: '#2e303a',
-      },
-    },
   },
   typography: {
     fontFamily: "system-ui, 'Segoe UI', Roboto, sans-serif",

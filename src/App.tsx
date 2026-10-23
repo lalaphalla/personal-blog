@@ -7,7 +7,7 @@ import './App.css'
 
 function App() {
   return (
-    <ThemeProvider theme={theme} defaultMode="system">
+    <ThemeProvider theme={theme} defaultMode="light">
       <CssBaseline />
       <Routes>
         <Route path="/" element={<Navigate to="/blog" replace />} />
