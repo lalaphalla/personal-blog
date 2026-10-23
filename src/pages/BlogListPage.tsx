@@ -13,7 +13,7 @@ import Pagination from '@mui/material/Pagination'
 import Skeleton from '@mui/material/Skeleton'
 import Stack from '@mui/material/Stack'
 import Typography from '@mui/material/Typography'
-import { formatDate } from '../data/posts'
+import { formatDate } from '../utils/format'
 import { listPosts } from '../services/blogApi'
 import type { Post } from '../types/blog'
 

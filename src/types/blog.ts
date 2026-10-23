@@ -24,4 +24,14 @@ export interface PostPage {
 export interface ListPostsParams {
   page?: number
   limit?: number
+  status?: PostStatus
+}
+
+export interface PostInput {
+  title: string
+  slug?: string | null
+  description?: string | null
+  category?: string | null
+  tags?: string[]
+  content?: string
 }
