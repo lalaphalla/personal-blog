@@ -1,5 +1,12 @@
-import { Link } from 'react-router'
-import './BlogListPage.css'
+import { Link as RouterLink } from 'react-router'
+import Box from '@mui/material/Box'
+import Card from '@mui/material/Card'
+import CardContent from '@mui/material/CardContent'
+import Chip from '@mui/material/Chip'
+import Container from '@mui/material/Container'
+import Link from '@mui/material/Link'
+import Stack from '@mui/material/Stack'
+import Typography from '@mui/material/Typography'
 
 type Post = {
   slug: string
@@ -46,32 +53,65 @@ function formatDate(iso: string) {
 
 function BlogListPage() {
   return (
-    <main className="blog-page">
-      <header className="blog-header">
-        <h1>Blog</h1>
-        <p>Notes, guides, and stories about building for the web.</p>
-      </header>
+    <Container component="main" maxWidth="md" sx={{ py: 6, flex: 1 }}>
+      <Box sx={{ mb: 4 }}>
+        <Typography variant="h1" component="h1">
+          Blog
+        </Typography>
+        <Typography color="text.secondary">
+          Notes, guides, and stories about building for the web.
+        </Typography>
+      </Box>
 
-      <ul className="post-list">
+      <Stack component="ul" spacing={2} sx={{ listStyle: 'none', p: 0, m: 0 }}>
         {posts.map((post) => (
-          <li key={post.slug} className="post-card">
-            <article>
-              <div className="post-meta">
-                <span className="post-tag">{post.tag}</span>
-                <time dateTime={post.date}>{formatDate(post.date)}</time>
-              </div>
-              <h2>
-                <Link to={`/blog/${post.slug}`}>{post.title}</Link>
-              </h2>
-              <p className="post-excerpt">{post.excerpt}</p>
-              <Link className="post-more" to={`/blog/${post.slug}`}>
+          <Card
+            key={post.slug}
+            component="li"
+            variant="outlined"
+            sx={{ bgcolor: 'transparent' }}
+          >
+            <CardContent>
+              <Stack direction="row" spacing={1.5} sx={{ alignItems: 'center', mb: 1.5 }}>
+                <Chip
+                  label={post.tag}
+                  size="small"
+                  color="primary"
+                  variant="outlined"
+                />
+                <Typography variant="caption" color="text.secondary">
+                  <time dateTime={post.date}>{formatDate(post.date)}</time>
+                </Typography>
+              </Stack>
+
+              <Typography variant="h5" component="h2" gutterBottom>
+                <Link
+                  component={RouterLink}
+                  to={`/blog/${post.slug}`}
+                  color="inherit"
+                  underline="hover"
+                >
+                  {post.title}
+                </Link>
+              </Typography>
+
+              <Typography color="text.secondary" sx={{ mb: 1.5 }}>
+                {post.excerpt}
+              </Typography>
+
+              <Link
+                component={RouterLink}
+                to={`/blog/${post.slug}`}
+                color="primary"
+                underline="hover"
+              >
                 Read more →
               </Link>
-            </article>
-          </li>
+            </CardContent>
+          </Card>
         ))}
-      </ul>
-    </main>
+      </Stack>
+    </Container>
   )
 }
 

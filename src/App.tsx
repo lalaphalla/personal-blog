@@ -1,14 +1,20 @@
+import CssBaseline from '@mui/material/CssBaseline'
+import { ThemeProvider } from '@mui/material/styles'
 import { Navigate, Route, Routes } from 'react-router'
 import BlogListPage from './pages/BlogListPage'
+import { theme } from './theme'
 import './App.css'
 
 function App() {
   return (
-    <Routes>
-      <Route path="/" element={<Navigate to="/blog" replace />} />
-      <Route path="/blog" element={<BlogListPage />} />
-      <Route path="*" element={<Navigate to="/blog" replace />} />
-    </Routes>
+    <ThemeProvider theme={theme} defaultMode="system">
+      <CssBaseline />
+      <Routes>
+        <Route path="/" element={<Navigate to="/blog" replace />} />
+        <Route path="/blog" element={<BlogListPage />} />
+        <Route path="*" element={<Navigate to="/blog" replace />} />
+      </Routes>
+    </ThemeProvider>
   )
 }
 
