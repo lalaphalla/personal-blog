@@ -19,6 +19,11 @@ const postSchema = z.object({
     .or(z.literal('')),
   description: z.string().max(500, 'Description must be 500 characters or fewer').optional(),
   category: z.string().max(100, 'Category must be 100 characters or fewer').optional(),
+  cover_url: z
+    .string()
+    .max(500, 'Cover URL must be 500 characters or fewer')
+    .refine((v) => v === '' || /^https?:\/\/\S+$/.test(v), 'Must be a valid http(s) URL')
+    .optional(),
   tags: z.string().optional(),
   content: z.string().optional(),
 })
@@ -30,6 +35,7 @@ export interface PostFormSubmit {
   slug?: string
   description?: string
   category?: string
+  cover_url?: string
   tags: string[]
   content: string
 }
@@ -62,6 +68,7 @@ function PostForm({ post, onSubmit, submitLabel, isSubmitting, error }: PostForm
       slug: post?.slug ?? '',
       description: post?.description ?? '',
       category: post?.category ?? '',
+      cover_url: post?.cover_url ?? '',
       tags: post?.tags.join(', ') ?? '',
       content: post?.content ?? '',
     },
@@ -74,6 +81,7 @@ function PostForm({ post, onSubmit, submitLabel, isSubmitting, error }: PostForm
         slug: values.slug || undefined,
         description: values.description || undefined,
         category: values.category || undefined,
+        cover_url: values.cover_url || undefined,
         tags: parseTags(values.tags),
         content: values.content ?? '',
       })
@@ -160,6 +168,21 @@ function PostForm({ post, onSubmit, submitLabel, isSubmitting, error }: PostForm
             )}
           />
         </Stack>
+
+        <Controller
+          name="cover_url"
+          control={control}
+          render={({ field }) => (
+            <TextField
+              {...field}
+              label="Cover image URL"
+              fullWidth
+              placeholder="https://…"
+              error={Boolean(errors.cover_url)}
+              helperText={errors.cover_url?.message}
+            />
+          )}
+        />
 
         <Controller
           name="content"

@@ -5,7 +5,7 @@ import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
 import Card from '@mui/material/Card'
 import CardContent from '@mui/material/CardContent'
-import Chip from '@mui/material/Chip'
+// import Chip from '@mui/material/Chip'
 import Container from '@mui/material/Container'
 import Link from '@mui/material/Link'
 import Pagination from '@mui/material/Pagination'
@@ -15,6 +15,7 @@ import Typography from '@mui/material/Typography'
 import { formatDate } from '../utils/format'
 import { listPosts } from '../services/blogApi'
 import type { Post } from '../types/blog'
+import { alpha } from '@mui/material'
 
 const PAGE_SIZE = 10
 const WORDS_PER_MINUTE = 220
@@ -100,60 +101,117 @@ function PostMeta({ post }: { post: Post }) {
   )
 }
 
+
+
 function PostCard({ post }: { post: Post }) {
   const href = `/blog/${post.slug}`
+  const cover = post.cover_url
+  const initial = post.title.charAt(0).toUpperCase()
 
   return (
     <Card
       component="li"
-      variant="outlined"
+      elevation={0}
       sx={{
         position: 'relative',
         bgcolor: 'transparent',
-        transition: 'border-color .15s ease, transform .15s ease',
+        border: 0,
+        borderBottom: 1,
+        borderColor: 'divider',
+        borderRadius: 0,
+        transition: 'background-color .15s ease',
+        '&:last-of-type': { borderBottom: 0 },
         '&:hover, &:focus-within': {
-          borderColor: 'primary.main',
-          transform: 'translateY(-1px)',
+          bgcolor: 'action.hover',
+          '& .post-title': { color: 'primary.main' },
         },
+        mx: { xs: -2, sm: -3 },
+        px: { xs: 2, sm: 3 },
       }}
     >
-      <CardContent>
-        {post.tags.length > 0 && (
-          <Stack direction="row" sx={{ mb: 1.5, flexWrap: 'wrap', gap: 0.75, alignItems: 'center' }}>
-            {post.tags.slice(0, 2).map((tag) => (
-              <Chip key={tag} label={tag} size="small" color="primary" variant="outlined" />
-            ))}
-            {post.tags.length > 2 && (
-              <Typography variant="caption" color="text.secondary">
-                +{post.tags.length - 2}
+      <CardContent sx={{ display: 'flex', gap: 3, alignItems: 'center', px: 0, py: 3 }}>
+        {/* Text Content */}
+        <Box sx={{ minWidth: 0, flex: 1 }}>
+          <Stack direction="row" spacing={1.5} sx={{ mb: 1, alignItems: 'center' }}>
+            {post.tags[0] && (
+              <Typography
+                variant="caption"
+                sx={{ color: 'primary.main', fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase' }}
+              >
+                {post.tags[0]}
               </Typography>
             )}
+            <Dot />
+            <PostMeta post={post} />
           </Stack>
-        )}
 
-        <Typography variant="h5" component="h2" gutterBottom>
-          <Link
-            component={RouterLink}
-            to={href}
-            color="inherit"
-            underline="hover"
-            sx={{
-              // Stretch the title link across the whole card so the entire
-              // surface is clickable without nesting interactive elements.
-              '&::after': { content: '""', position: 'absolute', inset: 0 },
-            }}
-          >
-            {post.title}
-          </Link>
-        </Typography>
-
-        {post.description && (
-          <Typography color="text.secondary" sx={{ mb: 1.5 }}>
-            {post.description}
+          <Typography variant="h5" component="h2" sx={{ mb: 1.5 }}>
+            <Link
+              component={RouterLink}
+              to={href}
+              color="inherit"
+              underline="none"
+              className="post-title"
+              sx={{
+                '&::after': { content: '""', position: 'absolute', inset: 0 },
+                transition: 'color .15s ease',
+              }}
+            >
+              {post.title}
+            </Link>
           </Typography>
-        )}
 
-        <PostMeta post={post} />
+          {post.description && (
+            <Typography 
+              color="text.secondary" 
+              sx={{ 
+                display: '-webkit-box', 
+                WebkitLineClamp: 2, 
+                WebkitBoxOrient: 'vertical', 
+                overflow: 'hidden' 
+              }}
+            >
+              {post.description}
+            </Typography>
+          )}
+        </Box>
+
+        {/* Thumbnail or Fallback Graphic */}
+        <Box
+          sx={{
+            width: { xs: 64, sm: 96 },
+            height: { xs: 64, sm: 96 },
+            flexShrink: 0,
+            borderRadius: 2,
+            overflow: 'hidden',
+            bgcolor: 'action.hover', // Subtle background for the fallback
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          {cover ? (
+            <Box
+              component="img"
+              src={cover}
+              alt=""
+              loading="lazy"
+              sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
+            />
+          ) : (
+            // Minimal typographic fallback instead of a gradient
+            <Typography 
+              variant="h5" 
+              sx={{ 
+                color: 'text.secondary', 
+                fontWeight: 600,
+                userSelect: 'none',
+              }}
+            >
+              {initial}
+            </Typography>
+          )}
+        </Box>
       </CardContent>
     </Card>
   )
@@ -217,12 +275,29 @@ function BlogListPage() {
   }
 
   return (
+    <Box
+  sx={{
+    minHeight: '100svh',
+    backgroundImage: (t) =>
+      `radial-gradient(${alpha(t.palette.text.primary, 0.05)} 1px, transparent 1px)`,
+    backgroundSize: '24px 24px',
+    backgroundColor: 'background.default',
+  }}
+>
+
     <Container component="main" sx={{ py: 6, flex: 1 }}>
-      <Box sx={{ mb: 4 }}>
-        <Typography variant="h1" component="h1">
+      <Box
+        sx={{
+          mb: 4,
+          pb: 3,
+          borderBottom: 1,
+          borderColor: 'divider',
+        }}
+      >
+        <Typography variant="h1" component="h1" sx={{ mb: 1 }}>
           Blog
         </Typography>
-        <Typography color="text.secondary">
+        <Typography color="text.secondary" sx={{ maxWidth: '52ch' }}>
           Notes, guides, and stories about building for the web.
         </Typography>
       </Box>
@@ -276,6 +351,7 @@ function BlogListPage() {
         />
       )}
     </Container>
+</Box>
   )
 }
 

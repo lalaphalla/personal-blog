@@ -6,6 +6,7 @@ export interface Post {
   slug: string
   description: string | null
   category: string | null
+  cover_url: string | null
   tags: string[]
   content: string
   status: PostStatus
@@ -32,6 +33,7 @@ export interface PostInput {
   slug?: string | null
   description?: string | null
   category?: string | null
+  cover_url?: string | null
   tags?: string[]
   content?: string
 }

@@ -150,6 +150,22 @@ function BlogDetailPage() {
         {post.title}
       </Typography>
 
+      {post.cover_url && (
+        <Box
+          component="img"
+          src={post.cover_url}
+          alt=""
+          sx={{
+            width: '100%',
+            maxHeight: 420,
+            objectFit: 'cover',
+            borderRadius: 2,
+            mb: 3,
+            display: 'block',
+          }}
+        />
+      )}
+
       <Box component="article" sx={markdownSx}>
         <Markdown remarkPlugins={[remarkGfm]}>{post.content}</Markdown>
       </Box>
