@@ -4,6 +4,7 @@ import Tab from '@mui/material/Tab'
 import Tabs from '@mui/material/Tabs'
 import TextField from '@mui/material/TextField'
 import Markdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 import { useState } from 'react'
 
 const markdownSx = {
@@ -31,6 +32,21 @@ const markdownSx = {
     bgcolor: 'action.hover',
     '& code': { bgcolor: 'transparent', p: 0 },
   },
+  '& table': {
+    width: '100%',
+    my: 2,
+    borderCollapse: 'collapse',
+    fontSize: '0.9em',
+  },
+  '& th, & td': {
+    border: 1,
+    borderColor: 'divider',
+    px: 1,
+    py: 0.75,
+    textAlign: 'left',
+    verticalAlign: 'top',
+  },
+  '& th': { bgcolor: 'action.hover', fontWeight: 600 },
 } as const
 
 interface MarkdownEditorProps {
@@ -73,7 +89,7 @@ function MarkdownEditor({ value, onChange, error, minRows = 16 }: MarkdownEditor
       ) : (
         <Paper variant="outlined" sx={{ minHeight: 280, ...markdownSx }}>
           {value.trim() ? (
-            <Markdown>{value}</Markdown>
+            <Markdown remarkPlugins={[remarkGfm]}>{value}</Markdown>
           ) : (
             <Box sx={{ color: 'text.secondary' }}>Nothing to preview yet.</Box>
           )}

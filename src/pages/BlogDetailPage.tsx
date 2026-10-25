@@ -1,4 +1,5 @@
 import Markdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 import { Link as RouterLink, Navigate, useParams } from 'react-router'
 import { useQuery } from '@tanstack/react-query'
 import Alert from '@mui/material/Alert'
@@ -51,6 +52,24 @@ const markdownSx = {
     overflowX: 'auto',
     bgcolor: 'action.hover',
     '& code': { bgcolor: 'transparent', p: 0 },
+  },
+  '& table': {
+    width: '100%',
+    my: 2,
+    borderCollapse: 'collapse',
+    fontSize: '0.95em',
+  },
+  '& th, & td': {
+    border: 1,
+    borderColor: 'divider',
+    px: 1.5,
+    py: 1,
+    textAlign: 'left',
+    verticalAlign: 'top',
+  },
+  '& th': {
+    bgcolor: 'action.hover',
+    fontWeight: 600,
   },
 } as const
 
@@ -132,7 +151,7 @@ function BlogDetailPage() {
       </Typography>
 
       <Box component="article" sx={markdownSx}>
-        <Markdown>{post.content}</Markdown>
+        <Markdown remarkPlugins={[remarkGfm]}>{post.content}</Markdown>
       </Box>
     </Container>
   )

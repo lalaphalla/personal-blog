@@ -9,7 +9,7 @@ import DashboardPage from './pages/admin/DashboardPage'
 import PostEditorPage from './pages/admin/PostEditorPage'
 import PostsPage from './pages/admin/PostsPage'
 import { theme } from './theme'
-import './App.css'
+
 
 function App() {
   return (
