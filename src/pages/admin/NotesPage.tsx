@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Link as RouterLink, useNavigate } from 'react-router'
 import Alert from '@mui/material/Alert'
@@ -10,6 +10,7 @@ import IconButton from '@mui/material/IconButton'
 import List from '@mui/material/List'
 import ListItemButton from '@mui/material/ListItemButton'
 import ListItemText from '@mui/material/ListItemText'
+import MenuItem from '@mui/material/MenuItem'
 import Paper from '@mui/material/Paper'
 import Stack from '@mui/material/Stack'
 import TextField from '@mui/material/TextField'
@@ -19,6 +20,7 @@ import {
   archiveNote,
   createNotebook,
   deleteNotebook,
+  listAllTags,
   listNotebooks,
   listNotes,
   toggleFavoriteNote,
@@ -155,12 +157,25 @@ function NotesPage() {
   const queryClient = useQueryClient()
   const [mode, setMode] = useState<Mode>({ kind: 'view', view: 'all' })
   const [tagFilter, setTagFilter] = useState<string | null>(null)
+  const [searchText, setSearchText] = useState('')
+  const [search, setSearch] = useState('')
   const [newNotebookName, setNewNotebookName] = useState('')
   const [actionError, setActionError] = useState<string | null>(null)
+
+  // Debounce the search box so typing doesn't fire a request per keystroke
+  useEffect(() => {
+    const timer = window.setTimeout(() => setSearch(searchText), 300)
+    return () => window.clearTimeout(timer)
+  }, [searchText])
 
   const { data: notebooks } = useQuery({
     queryKey: ['admin', 'notebooks'],
     queryFn: listNotebooks,
+  })
+
+  const { data: allTags } = useQuery({
+    queryKey: ['admin', 'notes', 'tags'],
+    queryFn: listAllTags,
   })
 
   const params = modeToParams(mode)
@@ -171,8 +186,10 @@ function NotesPage() {
       'list',
       mode.kind === 'view' ? mode.view : `nb-${mode.id}`,
       tagFilter ?? '',
+      search,
     ],
-    queryFn: () => listNotes({ ...params, tag: tagFilter ?? undefined }),
+    queryFn: () => listNotes({ ...params, tag: tagFilter ?? undefined, search: search || undefined }),
+    placeholderData: (previous) => previous, // keep list visible while refiltering
   })
 
   const invalidateNotes = () => queryClient.invalidateQueries({ queryKey: ['admin', 'notes'] })
@@ -295,6 +312,34 @@ function NotesPage() {
 
         {/* Note list */}
         <Box sx={{ flex: 1, minWidth: 0, width: '100%' }}>
+          <Stack
+            direction={{ xs: 'column', sm: 'row' }}
+            spacing={1}
+            sx={{ mb: 2, alignItems: 'center' }}
+          >
+            <TextField
+              size="small"
+              fullWidth
+              placeholder="Search notes by title…"
+              value={searchText}
+              onChange={(event) => setSearchText(event.target.value)}
+            />
+            <TextField
+              select
+              size="small"
+              label="Tag"
+              sx={{ minWidth: 150 }}
+              value={tagFilter ?? ''}
+              onChange={(event) => setTagFilter(event.target.value || null)}
+            >
+              <MenuItem value="">All tags</MenuItem>
+              {(allTags ?? []).map((tag) => (
+                <MenuItem key={tag} value={tag}>
+                  {tag}
+                </MenuItem>
+              ))}
+            </TextField>
+          </Stack>
           {isPending ? null : isError ? (
             <Alert severity="error" action={<Button size="small" color="inherit" onClick={() => refetch()}>Retry</Button>}>
               {getErrorMessage(error)}
@@ -311,6 +356,17 @@ function NotesPage() {
                     color="primary"
                     label={`tag: ${tagFilter}`}
                     onDelete={() => setTagFilter(null)}
+                  />
+                ) : null}
+                {search ? (
+                  <Chip
+                    size="small"
+                    color="secondary"
+                    label={`search: ${search}`}
+                    onDelete={() => {
+                      setSearch('')
+                      setSearchText('')
+                    }}
                   />
                 ) : null}
               </Stack>

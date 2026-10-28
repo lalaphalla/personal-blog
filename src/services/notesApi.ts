@@ -28,6 +28,7 @@ export interface NoteListParams {
   notebook_id?: number
   limit?: number
   tag?: string
+  search?: string
 }
 
 export interface NoteInput {
@@ -39,6 +40,10 @@ export interface NoteInput {
 
 export function listNotebooks(): Promise<Notebook[]> {
   return request<Notebook[]>('/admin/notebooks')
+}
+
+export function listAllTags(): Promise<string[]> {
+  return request<{ tags: string[] }>('/admin/notes/tags').then((data) => data.tags)
 }
 
 export function createNotebook(input: { name: string; color?: string }): Promise<Notebook> {
@@ -65,6 +70,7 @@ function noteQuery(params: NoteListParams): string {
   if (params.notebook_id !== undefined) search.set('notebook_id', String(params.notebook_id))
   if (params.limit !== undefined) search.set('limit', String(params.limit))
   if (params.tag) search.set('tag', params.tag)
+  if (params.search) search.set('search', params.search)
   const query = search.toString()
   return query ? `?${query}` : ''
 }
