@@ -13,65 +13,7 @@ import Stack from '@mui/material/Stack'
 import Typography from '@mui/material/Typography'
 import { formatDate } from '../utils/format'
 import { ApiError, getPostBySlug } from '../services/blogApi'
-
-const markdownSx = {
-  mt: 1,
-  color: 'text.primary',
-  lineHeight: 1.75,
-  '& p, & ul, & ol': { my: 0, mb: 2 },
-  '& li': { mb: 0.5 },
-  '& h2': {
-    mt: 4,
-    mb: 1.5,
-    fontSize: '1.5rem',
-    fontWeight: 500,
-    color: 'text.primary',
-  },
-  '& h3': {
-    mt: 3,
-    mb: 1,
-    fontSize: '1.15rem',
-    fontWeight: 500,
-    color: 'text.primary',
-  },
-  '& a': { color: 'primary.main' },
-  '& strong': { color: 'text.primary' },
-  '& code': {
-    fontFamily: 'monospace',
-    fontSize: '0.9em',
-    px: 0.5,
-    py: 0.25,
-    borderRadius: 1,
-    bgcolor: 'action.hover',
-  },
-  '& pre': {
-    my: 0,
-    mb: 2,
-    p: 2,
-    borderRadius: 2,
-    overflowX: 'auto',
-    bgcolor: 'action.hover',
-    '& code': { bgcolor: 'transparent', p: 0 },
-  },
-  '& table': {
-    width: '100%',
-    my: 2,
-    borderCollapse: 'collapse',
-    fontSize: '0.95em',
-  },
-  '& th, & td': {
-    border: 1,
-    borderColor: 'divider',
-    px: 1.5,
-    py: 1,
-    textAlign: 'left',
-    verticalAlign: 'top',
-  },
-  '& th': {
-    bgcolor: 'action.hover',
-    fontWeight: 600,
-  },
-} as const
+import { markdownSx } from '../components/markdownSx'
 
 function BlogDetailPage() {
   const { slug } = useParams()
@@ -166,7 +108,7 @@ function BlogDetailPage() {
         />
       )}
 
-      <Box component="article" sx={markdownSx}>
+      <Box component="article" sx={{ mt: 1, ...markdownSx }}>
         <Markdown remarkPlugins={[remarkGfm]}>{post.content}</Markdown>
       </Box>
     </Container>

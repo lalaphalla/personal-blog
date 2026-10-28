@@ -1,53 +1,11 @@
-import Box from '@mui/material/Box'
-import Paper from '@mui/material/Paper'
-import Tab from '@mui/material/Tab'
-import Tabs from '@mui/material/Tabs'
-import TextField from '@mui/material/TextField'
-import Markdown from 'react-markdown'
-import remarkGfm from 'remark-gfm'
 import { useState } from 'react'
-
-const markdownSx = {
-  p: 2,
-  color: 'text.primary',
-  lineHeight: 1.7,
-  '& p, & ul, & ol': { my: 0, mb: 2 },
-  '& li': { mb: 0.5 },
-  '& h2': { mt: 3, mb: 1, fontSize: '1.3rem', fontWeight: 500 },
-  '& h3': { mt: 2, mb: 1, fontSize: '1.1rem', fontWeight: 500 },
-  '& code': {
-    fontFamily: 'monospace',
-    fontSize: '0.9em',
-    px: 0.5,
-    py: 0.25,
-    borderRadius: 1,
-    bgcolor: 'action.hover',
-  },
-  '& pre': {
-    my: 0,
-    mb: 2,
-    p: 2,
-    borderRadius: 2,
-    overflowX: 'auto',
-    bgcolor: 'action.hover',
-    '& code': { bgcolor: 'transparent', p: 0 },
-  },
-  '& table': {
-    width: '100%',
-    my: 2,
-    borderCollapse: 'collapse',
-    fontSize: '0.9em',
-  },
-  '& th, & td': {
-    border: 1,
-    borderColor: 'divider',
-    px: 1,
-    py: 0.75,
-    textAlign: 'left',
-    verticalAlign: 'top',
-  },
-  '& th': { bgcolor: 'action.hover', fontWeight: 600 },
-} as const
+import type { ClipboardEvent, DragEvent } from 'react'
+import Box from '@mui/material/Box'
+import FormHelperText from '@mui/material/FormHelperText'
+import MDEditor from '@uiw/react-md-editor'
+import '@uiw/react-md-editor/markdown-editor.css'
+import { adminUploadImage } from '../../services/adminApi'
+import { getErrorMessage } from '../../config/queryClient'
 
 interface MarkdownEditorProps {
   value: string
@@ -56,45 +14,81 @@ interface MarkdownEditorProps {
   minRows?: number
 }
 
+function altFromFilename(filename: string): string {
+  return filename.replace(/\.[^.]+$/, '').replace(/[^\w-]+/g, ' ').trim() || 'image'
+}
+
+/** Insert a snippet at the current cursor position of the editor textarea. */
+function insertAtCursor(textarea: HTMLTextAreaElement, snippet: string, onChange: (v: string) => void) {
+  const start = textarea.selectionStart ?? textarea.value.length
+  const end = textarea.selectionEnd ?? start
+  const nextValue = textarea.value.slice(0, start) + snippet + textarea.value.slice(end)
+  onChange(nextValue)
+
+  requestAnimationFrame(() => {
+    const pos = start + snippet.length
+    textarea.focus()
+    textarea.setSelectionRange(pos, pos)
+  })
+}
+
 function MarkdownEditor({ value, onChange, error, minRows = 16 }: MarkdownEditorProps) {
-  const [tab, setTab] = useState(0)
+  const [uploading, setUploading] = useState(false)
+  const [uploadMessage, setUploadMessage] = useState<string | null>(null)
+
+  async function uploadAndInsert(files: FileList, textarea: HTMLTextAreaElement) {
+    setUploadMessage(null)
+    for (const file of Array.from(files)) {
+      if (!file.type.startsWith('image/')) {
+        setUploadMessage(`Skipped "${file.name}" — images only`)
+        continue
+      }
+      setUploading(true)
+      try {
+        const { url } = await adminUploadImage(file)
+        insertAtCursor(textarea, `![${altFromFilename(file.name)}](${url})\n`, onChange)
+      } catch (uploadError) {
+        setUploadMessage(getErrorMessage(uploadError))
+      } finally {
+        setUploading(false)
+      }
+    }
+  }
+
+  function handlePaste(event: ClipboardEvent<HTMLTextAreaElement>) {
+    const files = event.clipboardData?.files
+    if (!files || files.length === 0) return
+    event.preventDefault()
+    void uploadAndInsert(files, event.currentTarget)
+  }
+
+  function handleDrop(event: DragEvent<HTMLTextAreaElement>) {
+    const files = event.dataTransfer?.files
+    if (!files || files.length === 0) return
+    event.preventDefault()
+    void uploadAndInsert(files, event.currentTarget)
+  }
 
   return (
-    <Box>
-      <Tabs value={tab} onChange={(_, next) => setTab(next)} sx={{ mb: 1 }}>
-        <Tab label="Write" />
-        <Tab label="Preview" />
-      </Tabs>
-
-      {tab === 0 ? (
-        <TextField
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          multiline
-          minRows={minRows}
-          fullWidth
-          placeholder="Write your post in Markdown…"
-          error={Boolean(error)}
-          helperText={error}
-          slotProps={{
-            input: {
-              sx: {
-                fontFamily: 'monospace',
-                fontSize: '0.9rem',
-                alignItems: 'flex-start',
-              },
-            },
-          }}
-        />
-      ) : (
-        <Paper variant="outlined" sx={{ minHeight: 280, ...markdownSx }}>
-          {value.trim() ? (
-            <Markdown remarkPlugins={[remarkGfm]}>{value}</Markdown>
-          ) : (
-            <Box sx={{ color: 'text.secondary' }}>Nothing to preview yet.</Box>
-          )}
-        </Paper>
-      )}
+    <Box data-color-mode="light">
+      <MDEditor
+        value={value}
+        onChange={(next) => onChange(next ?? '')}
+        height={minRows * 24}
+        preview="live"
+        textareaProps={{
+          placeholder: 'Write your post in Markdown…',
+          onPaste: handlePaste,
+          onDrop: handleDrop,
+        }}
+      />
+      {error ? <FormHelperText error>{error}</FormHelperText> : null}
+      {uploading ? <FormHelperText>Uploading image…</FormHelperText> : null}
+      {!uploading && uploadMessage ? (
+        <FormHelperText error={/skipped|failed|error/i.test(uploadMessage) ? true : undefined}>
+          {uploadMessage}
+        </FormHelperText>
+      ) : null}
     </Box>
   )
 }

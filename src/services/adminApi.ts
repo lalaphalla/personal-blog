@@ -7,6 +7,23 @@ export interface AdminListParams {
   status?: PostStatus
 }
 
+export interface UploadedImage {
+  filename: string
+  url: string
+  size_bytes: number
+  created_at: number
+}
+
+export function adminListImages(): Promise<UploadedImage[]> {
+  return request<UploadedImage[]>('/admin/uploads')
+}
+
+export function adminUploadImage(file: File): Promise<UploadedImage> {
+  const data = new FormData()
+  data.append('file', file)
+  return request<UploadedImage>('/admin/uploads', { method: 'POST', body: data })
+}
+
 export function adminListPosts(params: AdminListParams = {}): Promise<PostPage> {
   const search = new URLSearchParams()
   if (params.page !== undefined) search.set('page', String(params.page))

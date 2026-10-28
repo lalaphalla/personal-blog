@@ -49,7 +49,13 @@ function AdminLayout() {
   }
 
   const { pathname } = location
-  const tab = pathname.startsWith('/admin/posts') ? 1 : 0
+  const tab = pathname.startsWith('/admin/posts')
+    ? 1
+    : pathname.startsWith('/admin/notes')
+      ? 2
+      : pathname.startsWith('/admin/media')
+        ? 3
+        : 0
 
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: 'grey.50', display: 'flex', flexDirection: 'column' }}>
@@ -61,6 +67,8 @@ function AdminLayout() {
           <Tabs value={tab} sx={{ flexGrow: 1 }}>
             <Tab label="Dashboard" component={NavLink} to="/admin" />
             <Tab label="Posts" component={NavLink} to="/admin/posts" />
+            <Tab label="Notes" component={NavLink} to="/admin/notes" />
+            <Tab label="Media" component={NavLink} to="/admin/media" />
           </Tabs>
           <Button component={RouterLink} to="/blog" size="small">
             View blog →

@@ -1,12 +1,15 @@
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
+import { useRef, useState } from 'react'
 import Alert from '@mui/material/Alert'
 import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
+import InputAdornment from '@mui/material/InputAdornment'
 import Stack from '@mui/material/Stack'
 import TextField from '@mui/material/TextField'
 import MarkdownEditor from './MarkdownEditor'
+import { adminUploadImage } from '../../services/adminApi'
 import type { Post } from '../../types/blog'
 
 const postSchema = z.object({
@@ -22,7 +25,10 @@ const postSchema = z.object({
   cover_url: z
     .string()
     .max(500, 'Cover URL must be 500 characters or fewer')
-    .refine((v) => v === '' || /^https?:\/\/\S+$/.test(v), 'Must be a valid http(s) URL')
+    .refine(
+      (v) => v === '' || /^https?:\/\/\S+$/.test(v) || /^\/\S+$/.test(v),
+      'Must be a valid http(s) URL or an uploaded media path',
+    )
     .optional(),
   tags: z.string().optional(),
   content: z.string().optional(),
@@ -57,6 +63,9 @@ function parseTags(value?: string): string[] {
 }
 
 function PostForm({ post, onSubmit, submitLabel, isSubmitting, error }: PostFormProps) {
+  const coverFileRef = useRef<HTMLInputElement>(null)
+  const [coverUploading, setCoverUploading] = useState(false)
+  const [coverUploadError, setCoverUploadError] = useState<string | null>(null)
   const {
     control,
     handleSubmit,
@@ -177,9 +186,45 @@ function PostForm({ post, onSubmit, submitLabel, isSubmitting, error }: PostForm
               {...field}
               label="Cover image URL"
               fullWidth
-              placeholder="https://…"
-              error={Boolean(errors.cover_url)}
-              helperText={errors.cover_url?.message}
+              placeholder="https://… or click Upload"
+              error={Boolean(errors.cover_url) || Boolean(coverUploadError)}
+              helperText={errors.cover_url?.message ?? coverUploadError}
+              slotProps={{
+                input: {
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <input
+                        ref={coverFileRef}
+                        type="file"
+                        accept="image/png,image/jpeg,image/gif,image/webp"
+                        hidden
+                        onChange={async (event) => {
+                          const file = event.target.files?.[0]
+                          if (!file) return
+                          setCoverUploadError(null)
+                          setCoverUploading(true)
+                          try {
+                            const { url } = await adminUploadImage(file)
+                            field.onChange(url)
+                          } catch (uploadError) {
+                            setCoverUploadError(uploadError instanceof Error ? uploadError.message : 'Upload failed')
+                          } finally {
+                            setCoverUploading(false)
+                            if (coverFileRef.current) coverFileRef.current.value = ''
+                          }
+                        }}
+                      />
+                      <Button
+                        size="small"
+                        onClick={() => coverFileRef.current?.click()}
+                        disabled={coverUploading}
+                      >
+                        {coverUploading ? 'Uploading…' : 'Upload'}
+                      </Button>
+                    </InputAdornment>
+                  ),
+                },
+              }}
             />
           )}
         />

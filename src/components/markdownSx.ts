@@ -1,0 +1,62 @@
+/** Shared typography styles for rendered markdown blocks (blog + notes). */
+export const markdownSx = {
+  color: 'text.primary',
+  lineHeight: 1.75,
+  '& p, & ul, & ol': { my: 0, mb: 2 },
+  '& li': { mb: 0.5 },
+  '& h2': {
+    mt: 3,
+    mb: 1.5,
+    fontSize: '1.3rem',
+    fontWeight: 500,
+    color: 'text.primary',
+  },
+  '& h3': {
+    mt: 2,
+    mb: 1,
+    fontSize: '1.1rem',
+    fontWeight: 500,
+    color: 'text.primary',
+  },
+  '& a': { color: 'primary.main' },
+  '& strong': { color: 'text.primary' },
+  '& code': {
+    fontFamily: 'monospace',
+    fontSize: '0.9em',
+    px: 0.5,
+    py: 0.25,
+    borderRadius: 1,
+    bgcolor: 'action.hover',
+  },
+  '& pre': {
+    my: 0,
+    mb: 2,
+    p: 2,
+    borderRadius: 2,
+    overflowX: 'auto',
+    bgcolor: 'action.hover',
+    '& code': { bgcolor: 'transparent', p: 0 },
+  },
+  '& table': {
+    width: '100%',
+    my: 2,
+    borderCollapse: 'collapse',
+    fontSize: '0.9em',
+  },
+  '& th, & td': {
+    border: 1,
+    borderColor: 'divider',
+    px: 1.5,
+    py: 0.75,
+    textAlign: 'left',
+    verticalAlign: 'top',
+  },
+  '& th': {
+    bgcolor: 'action.hover',
+    fontWeight: 600,
+  },
+  '& img': {
+    maxWidth: '100%',
+    borderRadius: 2,
+  },
+} as const

@@ -5,8 +5,12 @@ import GlobalQuerySnackbar from './components/GlobalQuerySnackbar'
 import AdminLayout from './layouts/AdminLayout'
 import BlogDetailPage from './pages/BlogDetailPage'
 import BlogListPage from './pages/BlogListPage'
+import NoteViewPage from './pages/admin/NoteViewPage'
 import DashboardPage from './pages/admin/DashboardPage'
 import LoginPage from './pages/admin/LoginPage'
+import MediaPage from './pages/admin/MediaPage'
+import NoteEditorPage from './pages/admin/NoteEditorPage'
+import NotesPage from './pages/admin/NotesPage'
 import PostEditorPage from './pages/admin/PostEditorPage'
 import PostsPage from './pages/admin/PostsPage'
 import { theme } from './theme'
@@ -26,6 +30,11 @@ function App() {
           <Route path="posts" element={<PostsPage />} />
           <Route path="posts/new" element={<PostEditorPage />} />
           <Route path="posts/:id/edit" element={<PostEditorPage />} />
+          <Route path="notes" element={<NotesPage />} />
+          <Route path="notes/new" element={<NoteEditorPage />} />
+          <Route path="notes/:id" element={<NoteViewPage />} />
+          <Route path="notes/:id/edit" element={<NoteEditorPage />} />
+          <Route path="media" element={<MediaPage />} />
         </Route>
         <Route path="*" element={<Navigate to="/blog" replace />} />
       </Routes>

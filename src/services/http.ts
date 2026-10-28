@@ -11,11 +11,13 @@ export class ApiError extends Error {
 }
 
 export async function request<T>(path: string, init?: RequestInit): Promise<T> {
+  const isFormData = init?.body instanceof FormData
   const response = await fetch(apiUrl(path), {
     ...init,
     credentials: 'include',
     headers: {
-      'Content-Type': 'application/json',
+      // Only set JSON content type when NOT sending FormData (browser sets the multipart boundary).
+      ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
       ...init?.headers,
     },
   })
