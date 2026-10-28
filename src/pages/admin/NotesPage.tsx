@@ -60,11 +60,13 @@ function NoteCard({
   onEdit,
   onToggleFavorite,
   onArchiveToggle,
+  onSelectTag,
 }: {
   note: Note
   onEdit: (note: Note) => void
   onToggleFavorite: (note: Note) => void
   onArchiveToggle: (note: Note) => void
+  onSelectTag: (tag: string) => void
 }) {
   return (
     <Paper
@@ -91,6 +93,20 @@ function NoteCard({
           <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
             {snippet(note.content) || 'Empty note'}
           </Typography>
+          <Stack direction="row" spacing={0.5} sx={{ mb: 0.5, flexWrap: 'wrap', rowGap: 0.5 }}>
+            {note.tags.map((tag) => (
+              <Chip
+                key={tag}
+                size="small"
+                label={tag}
+                onClick={(event) => {
+                  event.preventDefault()
+                  onSelectTag(tag)
+                }}
+                sx={{ height: 20, fontSize: '0.7rem' }}
+              />
+            ))}
+          </Stack>
           <Typography variant="caption" color="text.secondary">
             {formatDate(note.updated_at)}
           </Typography>
@@ -138,6 +154,7 @@ function NotesPage() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const [mode, setMode] = useState<Mode>({ kind: 'view', view: 'all' })
+  const [tagFilter, setTagFilter] = useState<string | null>(null)
   const [newNotebookName, setNewNotebookName] = useState('')
   const [actionError, setActionError] = useState<string | null>(null)
 
@@ -148,8 +165,14 @@ function NotesPage() {
 
   const params = modeToParams(mode)
   const { data: notes, isPending, isError, error, refetch } = useQuery({
-    queryKey: ['admin', 'notes', 'list', mode.kind === 'view' ? mode.view : `nb-${mode.id}`],
-    queryFn: () => listNotes(params),
+    queryKey: [
+      'admin',
+      'notes',
+      'list',
+      mode.kind === 'view' ? mode.view : `nb-${mode.id}`,
+      tagFilter ?? '',
+    ],
+    queryFn: () => listNotes({ ...params, tag: tagFilter ?? undefined }),
   })
 
   const invalidateNotes = () => queryClient.invalidateQueries({ queryKey: ['admin', 'notes'] })
@@ -278,9 +301,19 @@ function NotesPage() {
             </Alert>
           ) : notes && notes.length > 0 ? (
             <Box>
-              <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-                {modeLabel(mode)}
-              </Typography>
+              <Stack direction="row" spacing={1} sx={{ mb: 1, alignItems: 'center' }}>
+                <Typography variant="body2" color="text.secondary">
+                  {modeLabel(mode)}
+                </Typography>
+                {tagFilter ? (
+                  <Chip
+                    size="small"
+                    color="primary"
+                    label={`tag: ${tagFilter}`}
+                    onDelete={() => setTagFilter(null)}
+                  />
+                ) : null}
+              </Stack>
               {notes.map((note) => (
                 <NoteCard
                   key={note.id}
@@ -288,6 +321,7 @@ function NotesPage() {
                   onEdit={(target) => navigate(`/admin/notes/${target.id}/edit`)}
                   onToggleFavorite={(target) => favoriteMutation.mutate(target)}
                   onArchiveToggle={(target) => archiveMutation.mutate(target)}
+                  onSelectTag={(tag) => setTagFilter((current) => (current === tag ? null : tag))}
                 />
               ))}
             </Box>

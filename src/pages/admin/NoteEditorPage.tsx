@@ -24,8 +24,20 @@ import {
 
 type SaveStatus = 'idle' | 'dirty' | 'saving' | 'saved' | 'error'
 
-function snapshot(title: string, content: string, notebookId: number | null): string {
-  return JSON.stringify({ title, content, notebookId })
+function snapshot(
+  title: string,
+  content: string,
+  notebookId: number | null,
+  tagsText: string,
+): string {
+  return JSON.stringify({ title, content, notebookId, tagsText })
+}
+
+function parseTags(value: string): string[] {
+  return value
+    .split(',')
+    .map((tag) => tag.trim())
+    .filter(Boolean)
 }
 
 function NoteEditorPage() {
@@ -37,6 +49,7 @@ function NoteEditorPage() {
   const [noteId, setNoteId] = useState<number | undefined>(routeNoteId)
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
+  const [tagsText, setTagsText] = useState('')
   const [notebookId, setNotebookId] = useState<number | null>(null)
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle')
   const [saveError, setSaveError] = useState<string | null>(null)
@@ -61,8 +74,9 @@ function NoteEditorPage() {
     if (noteId && note && !loadedRef.current) {
       setTitle(note.title)
       setContent(note.content)
+      setTagsText(note.tags.join(', '))
       setNotebookId(note.notebook_id)
-      lastSavedRef.current = snapshot(note.title, note.content, note.notebook_id)
+      lastSavedRef.current = snapshot(note.title, note.content, note.notebook_id, note.tags.join(', '))
       loadedRef.current = true
     }
     if (!routeNoteId && !noteId) {
@@ -73,16 +87,17 @@ function NoteEditorPage() {
   // Debounced autosave: creates the note on first meaningful input, then PUTs changes
   useEffect(() => {
     if (!loadedRef.current) return undefined
-    const next = snapshot(title, content, notebookId)
+    const next = snapshot(title, content, notebookId, tagsText)
     if (next === lastSavedRef.current) return undefined
 
     setSaveStatus('dirty')
     window.clearTimeout(saveTimerRef.current)
     saveTimerRef.current = window.setTimeout(() => {
       setSaveStatus('saving')
+      const tags = parseTags(tagsText)
       const save = noteId
-        ? updateNote(noteId, { title, content, notebook_id: notebookId })
-        : createNote({ title, content, notebook_id: notebookId })
+        ? updateNote(noteId, { title, content, tags, notebook_id: notebookId })
+        : createNote({ title, content, tags, notebook_id: notebookId })
       void save
         .then((saved) => {
           lastSavedRef.current = next
@@ -101,7 +116,7 @@ function NoteEditorPage() {
     }, 800)
 
     return () => window.clearTimeout(saveTimerRef.current)
-  }, [title, content, notebookId, noteId, navigate, queryClient])
+  }, [title, content, notebookId, tagsText, noteId, navigate, queryClient])
 
   const invalidateNotes = () => queryClient.invalidateQueries({ queryKey: ['admin', 'notes'] })
 
@@ -194,24 +209,34 @@ function NoteEditorPage() {
           onChange={(event) => setTitle(event.target.value)}
           slotProps={{ input: { sx: { fontWeight: 600, fontSize: '1.25rem' } } }}
         />
-        <TextField
-          select
-          label="Notebook"
-          size="small"
-          sx={{ maxWidth: 260 }}
-          value={notebookId === null ? '' : String(notebookId)}
-          onChange={(event) => {
-            const value = event.target.value
-            setNotebookId(value === '' ? null : Number(value))
-          }}
-        >
-          <MenuItem value="">No notebook</MenuItem>
-          {(notebooks ?? []).map((option) => (
-            <MenuItem key={option.id} value={String(option.id)}>
-              {option.name}
-            </MenuItem>
-          ))}
-        </TextField>
+        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+          <TextField
+            select
+            label="Notebook"
+            size="small"
+            sx={{ maxWidth: 260 }}
+            value={notebookId === null ? '' : String(notebookId)}
+            onChange={(event) => {
+              const value = event.target.value
+              setNotebookId(value === '' ? null : Number(value))
+            }}
+          >
+            <MenuItem value="">No notebook</MenuItem>
+            {(notebooks ?? []).map((option) => (
+              <MenuItem key={option.id} value={String(option.id)}>
+                {option.name}
+              </MenuItem>
+            ))}
+          </TextField>
+          <TextField
+            label="Tags"
+            size="small"
+            fullWidth
+            placeholder="idea, personal, todo…"
+            value={tagsText}
+            onChange={(event) => setTagsText(event.target.value)}
+          />
+        </Stack>
         <MarkdownEditor
           value={content}
           onChange={setContent}

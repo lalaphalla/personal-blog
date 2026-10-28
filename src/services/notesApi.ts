@@ -17,6 +17,7 @@ export interface Note {
   is_favorite: boolean
   archived_at: string | null
   title: string
+  tags: string[]
   content: string
   created_at: string
   updated_at: string
@@ -26,11 +27,13 @@ export interface NoteListParams {
   view?: NoteView
   notebook_id?: number
   limit?: number
+  tag?: string
 }
 
 export interface NoteInput {
   title: string
   content: string
+  tags?: string[]
   notebook_id?: number | null
 }
 
@@ -61,6 +64,7 @@ function noteQuery(params: NoteListParams): string {
   if (params.view && params.view !== 'all') search.set('view', params.view)
   if (params.notebook_id !== undefined) search.set('notebook_id', String(params.notebook_id))
   if (params.limit !== undefined) search.set('limit', String(params.limit))
+  if (params.tag) search.set('tag', params.tag)
   const query = search.toString()
   return query ? `?${query}` : ''
 }

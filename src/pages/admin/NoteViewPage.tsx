@@ -84,6 +84,13 @@ function NoteViewPage() {
         {note.is_favorite ? <Chip size="small" label="★" /> : null}
         {note.archived_at ? <Chip size="small" label="Archived" /> : null}
       </Stack>
+      {note.tags.length > 0 ? (
+        <Stack direction="row" spacing={0.5} sx={{ mb: 1, flexWrap: 'wrap', rowGap: 0.5 }}>
+          {note.tags.map((tag) => (
+            <Chip key={tag} size="small" variant="outlined" label={tag} />
+          ))}
+        </Stack>
+      ) : null}
       <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 3 }}>
         {new Date(note.updated_at).toLocaleString()}
       </Typography>
