@@ -10,8 +10,11 @@ import IconButton from '@mui/material/IconButton'
 import Paper from '@mui/material/Paper'
 import Stack from '@mui/material/Stack'
 import TextField from '@mui/material/TextField'
+import ToggleButton from '@mui/material/ToggleButton'
+import ToggleButtonGroup from '@mui/material/ToggleButtonGroup'
 import Tooltip from '@mui/material/Tooltip'
 import Typography from '@mui/material/Typography'
+import { alpha } from '@mui/material/styles'
 import {
   ChevronRightIcon,
   HeartIcon,
@@ -19,6 +22,7 @@ import {
   TrashIcon,
 } from '../DocIcons'
 import MarkdownEditor from '../admin/MarkdownEditor'
+import LiveMarkdownEditor from '../editor/LiveMarkdownEditor'
 import MoodPicker from './MoodPicker'
 import AttachmentStrip from './AttachmentStrip'
 import type {
@@ -78,6 +82,7 @@ export default function JournalEditorForm({
     initialData?.attachments || []
   )
 
+  const [editorMode, setEditorMode] = useState<'live' | 'standard'>('live')
   const [savingStatus, setSavingStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const isFirstRender = useRef(true)
@@ -283,13 +288,93 @@ export default function JournalEditorForm({
       />
 
       {/* Content Editor */}
-      <Box sx={{ minHeight: 320 }}>
-        <MarkdownEditor
-          value={content}
-          onChange={setContent}
-          minRows={14}
-        />
-      </Box>
+      <Paper
+        variant="outlined"
+        sx={{
+          borderRadius: 3,
+          overflow: 'hidden',
+          bgcolor: 'background.paper',
+        }}
+      >
+        <Box
+          sx={{
+            px: 2,
+            py: 1,
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            bgcolor: (theme) => alpha(theme.palette.primary.main, 0.02),
+            borderBottom: '1px solid',
+            borderColor: 'divider',
+          }}
+        >
+          <Typography
+            variant="caption"
+            sx={{
+              fontWeight: 650,
+              color: 'text.secondary',
+              letterSpacing: 0.6,
+              textTransform: 'uppercase',
+              fontSize: '0.7rem',
+            }}
+          >
+            {editorMode === 'live' ? 'Obsidian Live Preview' : 'Standard Markdown'}
+          </Typography>
+
+          <ToggleButtonGroup
+            size="small"
+            exclusive
+            value={editorMode}
+            onChange={(_, next) => {
+              if (next) setEditorMode(next)
+            }}
+            sx={{ height: 26 }}
+          >
+            <ToggleButton
+              value="live"
+              sx={{
+                px: 1.25,
+                fontSize: '0.75rem',
+                textTransform: 'none',
+                fontWeight: 600,
+                py: 0,
+              }}
+            >
+              Live Preview
+            </ToggleButton>
+            <ToggleButton
+              value="standard"
+              sx={{
+                px: 1.25,
+                fontSize: '0.75rem',
+                textTransform: 'none',
+                fontWeight: 600,
+                py: 0,
+              }}
+            >
+              Standard
+            </ToggleButton>
+          </ToggleButtonGroup>
+        </Box>
+
+        <Box sx={{ p: 2, minHeight: 320 }}>
+          {editorMode === 'live' ? (
+            <LiveMarkdownEditor
+              key={`${initialData?.id || 'new'}-live`}
+              initialContent={content}
+              onChange={setContent}
+              minHeight={320}
+              placeholder="What happened today? Write your thoughts, ideas, or reflections..."
+            />
+          ) : (
+            <MarkdownEditor
+              value={content}
+              onChange={setContent}
+              minRows={14}
+            />
+          )}
+        </Box>
+      </Paper>
 
       {/* Reflection Accordion */}
       <Accordion

@@ -9,8 +9,11 @@ import MenuItem from '@mui/material/MenuItem'
 import Paper from '@mui/material/Paper'
 import Stack from '@mui/material/Stack'
 import TextField from '@mui/material/TextField'
+import ToggleButton from '@mui/material/ToggleButton'
+import ToggleButtonGroup from '@mui/material/ToggleButtonGroup'
 import Tooltip from '@mui/material/Tooltip'
 import Typography from '@mui/material/Typography'
+import { alpha } from '@mui/material/styles'
 import {
   ArchiveIcon,
   StarFilledIcon,
@@ -18,6 +21,7 @@ import {
   TrashIcon,
 } from '../DocIcons'
 import MarkdownEditor from '../admin/MarkdownEditor'
+import LiveMarkdownEditor from '../editor/LiveMarkdownEditor'
 import { getErrorMessage } from '../../config/queryClient'
 import {
   archiveNote,
@@ -79,6 +83,7 @@ export default function NoteEditorForm({
   const [content, setContent] = useState('')
   const [tagsText, setTagsText] = useState('')
   const [notebookId, setNotebookId] = useState<number | null>(null)
+  const [editorMode, setEditorMode] = useState<'live' | 'standard'>('live')
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle')
   const [saveError, setSaveError] = useState<string | null>(null)
   const [currentNoteId, setCurrentNoteId] = useState<number | undefined>(initialNoteId)
@@ -426,15 +431,86 @@ export default function NoteEditorForm({
             </Stack>
           </Box>
           <Divider />
-          <Box sx={{ px: { xs: 2.25, md: compact ? 4 : 5.5 }, py: { xs: 2.5, md: compact ? 3 : 3.5 } }}>
-            <MarkdownEditor
-              value={content}
-              onChange={(next) => {
-                setContent(next)
-                markDirty()
+          <Box
+            sx={{
+              px: { xs: 2.25, md: compact ? 4 : 5.5 },
+              py: 1.25,
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              bgcolor: (theme) => alpha(theme.palette.primary.main, 0.02),
+            }}
+          >
+            <Typography
+              variant="caption"
+              sx={{
+                fontWeight: 650,
+                color: 'text.secondary',
+                letterSpacing: 0.6,
+                textTransform: 'uppercase',
+                fontSize: '0.7rem',
               }}
-              minRows={compact ? 18 : 20}
-            />
+            >
+              {editorMode === 'live' ? 'Obsidian Live Preview' : 'Standard Markdown'}
+            </Typography>
+
+            <ToggleButtonGroup
+              size="small"
+              exclusive
+              value={editorMode}
+              onChange={(_, next) => {
+                if (next) setEditorMode(next)
+              }}
+              sx={{ height: 26 }}
+            >
+              <ToggleButton
+                value="live"
+                sx={{
+                  px: 1.25,
+                  fontSize: '0.75rem',
+                  textTransform: 'none',
+                  fontWeight: 600,
+                  py: 0,
+                }}
+              >
+                Live Preview
+              </ToggleButton>
+              <ToggleButton
+                value="standard"
+                sx={{
+                  px: 1.25,
+                  fontSize: '0.75rem',
+                  textTransform: 'none',
+                  fontWeight: 600,
+                  py: 0,
+                }}
+              >
+                Standard
+              </ToggleButton>
+            </ToggleButtonGroup>
+          </Box>
+          <Divider />
+          <Box sx={{ px: { xs: 2.25, md: compact ? 4 : 5.5 }, py: { xs: 2.5, md: compact ? 3 : 3.5 } }}>
+            {editorMode === 'live' ? (
+              <LiveMarkdownEditor
+                key={`${currentNoteId || 'new'}-live`}
+                initialContent={content}
+                onChange={(next) => {
+                  setContent(next)
+                  markDirty()
+                }}
+                minHeight={compact ? 420 : 500}
+              />
+            ) : (
+              <MarkdownEditor
+                value={content}
+                onChange={(next) => {
+                  setContent(next)
+                  markDirty()
+                }}
+                minRows={compact ? 18 : 20}
+              />
+            )}
           </Box>
         </Paper>
       </Box>
