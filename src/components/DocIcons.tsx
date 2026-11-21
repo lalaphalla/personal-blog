@@ -277,3 +277,69 @@ export function CloseIcon(props: SvgIconProps) {
     </StrokeIcon>
   )
 }
+
+export function SparklesIcon(props: SvgIconProps) {
+  return (
+    <StrokeIcon {...props}>
+      <path d="m12 3-1.9 4.8L5.3 9.7l4.8 1.9L12 16.4l1.9-4.8 4.8-1.9-4.8-1.9L12 3Z" />
+      <path d="M5 3v4M3 5h4M19 17v4M17 19h4" />
+    </StrokeIcon>
+  )
+}
+
+export function SmileIcon(props: SvgIconProps) {
+  return (
+    <StrokeIcon {...props}>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M8 14s1.5 2 4 2 4-2 4-2" />
+      <line x1="9" y1="9" x2="9.01" y2="9" strokeWidth={2.5} />
+      <line x1="15" y1="9" x2="15.01" y2="9" strokeWidth={2.5} />
+    </StrokeIcon>
+  )
+}
+
+export function SunIcon(props: SvgIconProps) {
+  return (
+    <StrokeIcon {...props}>
+      <circle cx="12" cy="12" r="4" />
+      <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
+    </StrokeIcon>
+  )
+}
+
+export function HeartIcon(props: SvgIconProps) {
+  return (
+    <StrokeIcon {...props}>
+      <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
+    </StrokeIcon>
+  )
+}
+
+export function ChevronLeftIcon(props: SvgIconProps) {
+  return (
+    <StrokeIcon {...props}>
+      <path d="m15 18-6-6 6-6" />
+    </StrokeIcon>
+  )
+}
+
+export function RefreshIcon(props: SvgIconProps) {
+  return (
+    <StrokeIcon {...props}>
+      <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+      <path d="M3 3v5h5" />
+      <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16" />
+      <path d="M16 16h5v5" />
+    </StrokeIcon>
+  )
+}
+
+export function CameraIcon(props: SvgIconProps) {
+  return (
+    <StrokeIcon {...props}>
+      <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z" />
+      <circle cx="12" cy="13" r="3" />
+    </StrokeIcon>
+  )
+}
+

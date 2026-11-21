@@ -20,6 +20,7 @@ import Toolbar from '@mui/material/Toolbar'
 import Typography from '@mui/material/Typography'
 import { alpha } from '@mui/material/styles'
 import {
+  BookOpenIcon,
   ExternalLinkIcon,
   FileTextIcon,
   ImageIcon,
@@ -34,6 +35,7 @@ const NAV_ITEMS = [
   { label: 'Dashboard', to: '/admin', icon: <LayoutDashboardIcon />, end: true },
   { label: 'Posts', to: '/admin/posts', icon: <NewspaperIcon />, end: false },
   { label: 'Notes', to: '/admin/notes', icon: <FileTextIcon />, end: false },
+  { label: 'Journal', to: '/admin/journal', icon: <BookOpenIcon />, end: false },
   { label: 'Media', to: '/admin/media', icon: <ImageIcon />, end: false },
 ]
 
@@ -76,13 +78,17 @@ function AdminLayout() {
 
   const { pathname } = location
   const isNotesRoute = pathname.startsWith('/admin/notes')
+  const isJournalRoute = pathname.startsWith('/admin/journal')
+  const isFullBleed = isNotesRoute || isJournalRoute
   const tab = pathname.startsWith('/admin/posts')
     ? 1
     : pathname.startsWith('/admin/notes')
       ? 2
-      : pathname.startsWith('/admin/media')
+      : pathname.startsWith('/admin/journal')
         ? 3
-        : 0
+        : pathname.startsWith('/admin/media')
+          ? 4
+          : 0
 
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: 'grey.50', display: 'flex', flexDirection: 'column' }}>
@@ -117,6 +123,7 @@ function AdminLayout() {
             <Tab label="Dashboard" component={NavLink} to="/admin" end />
             <Tab label="Posts" component={NavLink} to="/admin/posts" />
             <Tab label="Notes" component={NavLink} to="/admin/notes" />
+            <Tab label="Journal" component={NavLink} to="/admin/journal" />
             <Tab label="Media" component={NavLink} to="/admin/media" />
           </Tabs>
           <Button
@@ -239,10 +246,10 @@ function AdminLayout() {
 
       <Container
         component="main"
-        maxWidth={isNotesRoute ? false : 'lg'}
-        disableGutters={isNotesRoute}
+        maxWidth={isFullBleed ? false : 'lg'}
+        disableGutters={isFullBleed}
         sx={{
-          py: isNotesRoute ? 0 : { xs: 2.5, md: 4 },
+          py: isFullBleed ? 0 : { xs: 2.5, md: 4 },
           flex: 1,
           display: 'flex',
           flexDirection: 'column',
