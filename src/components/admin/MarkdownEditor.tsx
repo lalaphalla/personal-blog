@@ -2,8 +2,16 @@ import { useState } from 'react'
 import type { ClipboardEvent, DragEvent } from 'react'
 import Box from '@mui/material/Box'
 import FormHelperText from '@mui/material/FormHelperText'
-import MDEditor from '@uiw/react-md-editor'
+import Stack from '@mui/material/Stack'
+import ToggleButton from '@mui/material/ToggleButton'
+import ToggleButtonGroup from '@mui/material/ToggleButtonGroup'
+import Typography from '@mui/material/Typography'
+import MDEditor, { commands } from '@uiw/react-md-editor'
 import '@uiw/react-md-editor/markdown-editor.css'
+import Markdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
+import { EditIcon, EyeIcon } from '../DocIcons'
+import { markdownSx } from '../markdownSx'
 import { adminUploadImage } from '../../services/adminApi'
 import { getErrorMessage } from '../../config/queryClient'
 
@@ -13,6 +21,13 @@ interface MarkdownEditorProps {
   error?: string
   minRows?: number
 }
+
+type EditorMode = 'write' | 'preview'
+
+/** Keep only the formatting actions: split/live preview is replaced by our own toggle. */
+const toolbarExtras = commands
+  .getExtraCommands()
+  .filter((command) => !['edit', 'live', 'preview'].includes(command.name ?? ''))
 
 function altFromFilename(filename: string): string {
   return filename.replace(/\.[^.]+$/, '').replace(/[^\w-]+/g, ' ').trim() || 'image'
@@ -33,6 +48,7 @@ function insertAtCursor(textarea: HTMLTextAreaElement, snippet: string, onChange
 }
 
 function MarkdownEditor({ value, onChange, error, minRows = 16 }: MarkdownEditorProps) {
+  const [mode, setMode] = useState<EditorMode>('write')
   const [uploading, setUploading] = useState(false)
   const [uploadMessage, setUploadMessage] = useState<string | null>(null)
 
@@ -71,17 +87,79 @@ function MarkdownEditor({ value, onChange, error, minRows = 16 }: MarkdownEditor
 
   return (
     <Box data-color-mode="light">
-      <MDEditor
-        value={value}
-        onChange={(next) => onChange(next ?? '')}
-        height={minRows * 24}
-        preview="live"
-        textareaProps={{
-          placeholder: 'Write your post in Markdown…',
-          onPaste: handlePaste,
-          onDrop: handleDrop,
-        }}
-      />
+      <Stack
+        direction="row"
+        sx={{ alignItems: 'center', justifyContent: 'space-between', gap: 1, mb: 1 }}
+      >
+        <Typography variant="caption" color="text.secondary">
+          Markdown
+        </Typography>
+        <ToggleButtonGroup
+          size="small"
+          exclusive
+          value={mode}
+          onChange={(_event, next: EditorMode | null) => {
+            if (next) setMode(next)
+          }}
+          aria-label="Editor view mode"
+          sx={{
+            bgcolor: 'background.paper',
+            '& .MuiToggleButton-root': {
+              px: 1.25,
+              py: 0.4,
+              gap: 0.5,
+              textTransform: 'none',
+              fontSize: '0.8125rem',
+            },
+          }}
+        >
+          <ToggleButton value="write" aria-label="Write markdown">
+            <EditIcon sx={{ fontSize: 15 }} />
+            Write
+          </ToggleButton>
+          <ToggleButton value="preview" aria-label="Preview markdown">
+            <EyeIcon sx={{ fontSize: 15 }} />
+            Preview
+          </ToggleButton>
+        </ToggleButtonGroup>
+      </Stack>
+
+      {mode === 'write' ? (
+        <MDEditor
+          value={value}
+          onChange={(next) => onChange(next ?? '')}
+          height={minRows * 24}
+          preview="edit"
+          extraCommands={toolbarExtras}
+          textareaProps={{
+            placeholder: 'Write in Markdown…',
+            onPaste: handlePaste,
+            onDrop: handleDrop,
+          }}
+        />
+      ) : (
+        <Box
+          sx={{
+            minHeight: minRows * 24,
+            p: { xs: 2, sm: 4 },
+            border: '1px solid',
+            borderColor: 'divider',
+            borderRadius: 2,
+            bgcolor: 'background.paper',
+          }}
+        >
+          {value.trim() ? (
+            <Box component="article" sx={markdownSx}>
+              <Markdown remarkPlugins={[remarkGfm]}>{value}</Markdown>
+            </Box>
+          ) : (
+            <Typography color="text.secondary">
+              Nothing to preview yet — switch to Write and start typing.
+            </Typography>
+          )}
+        </Box>
+      )}
+
       {error ? <FormHelperText error>{error}</FormHelperText> : null}
       {uploading ? <FormHelperText>Uploading image…</FormHelperText> : null}
       {!uploading && uploadMessage ? (

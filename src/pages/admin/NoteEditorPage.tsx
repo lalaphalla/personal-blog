@@ -5,10 +5,19 @@ import Alert from '@mui/material/Alert'
 import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
 import CircularProgress from '@mui/material/CircularProgress'
+import Divider from '@mui/material/Divider'
 import MenuItem from '@mui/material/MenuItem'
+import Paper from '@mui/material/Paper'
 import Stack from '@mui/material/Stack'
 import TextField from '@mui/material/TextField'
 import Typography from '@mui/material/Typography'
+import {
+  ArchiveIcon,
+  ArrowLeftIcon,
+  EyeIcon,
+  StarFilledIcon,
+  StarIcon,
+} from '../../components/DocIcons'
 import MarkdownEditor from '../../components/admin/MarkdownEditor'
 import { getErrorMessage } from '../../config/queryClient'
 import { listNotebooks } from '../../services/notesApi'
@@ -23,6 +32,8 @@ import {
 } from '../../services/notesApi'
 
 type SaveStatus = 'idle' | 'dirty' | 'saving' | 'saved' | 'error'
+
+const SERIF_FONT = "'Iowan Old Style', 'Palatino Linotype', Palatino, 'Source Serif 4', Georgia, serif"
 
 function snapshot(
   title: string,
@@ -157,12 +168,25 @@ function NoteEditorPage() {
 
   return (
     <Box>
-      <Stack direction="row" sx={{ alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-        <Button component={RouterLink} to="/admin/notes" size="small">
-          ← All notes
+      <Stack
+        direction="row"
+        sx={{ alignItems: 'center', justifyContent: 'space-between', mb: 2.5, gap: 1, flexWrap: 'wrap', rowGap: 1 }}
+      >
+        <Button
+          component={RouterLink}
+          to="/admin/notes"
+          size="small"
+          startIcon={<ArrowLeftIcon />}
+          sx={{ color: 'text.secondary' }}
+        >
+          Notes
         </Button>
-        <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
-          <Typography variant="caption" color={saveStatus === 'error' ? 'error' : 'text.secondary'}>
+        <Stack direction="row" spacing={1} sx={{ alignItems: 'center', flexWrap: 'wrap', rowGap: 1 }}>
+          <Typography
+            variant="caption"
+            color={saveStatus === 'error' ? 'error' : 'text.secondary'}
+            sx={{ mr: 0.5 }}
+          >
             {saveStatus === 'error' ? 'Save failed' : statusLabel[saveStatus]}
           </Typography>
           {noteId ? (
@@ -171,13 +195,29 @@ function NoteEditorPage() {
                 size="small"
                 onClick={() => favoriteMutation.mutate()}
                 title={note?.is_favorite ? 'Remove from favorites' : 'Add to favorites'}
+                startIcon={
+                  note?.is_favorite ? (
+                    <StarFilledIcon sx={{ color: 'warning.main' }} />
+                  ) : (
+                    <StarIcon />
+                  )
+                }
               >
-                {note?.is_favorite ? '★ Favorited' : '☆ Favorite'}
+                {note?.is_favorite ? 'Favorited' : 'Favorite'}
               </Button>
-              <Button size="small" onClick={() => archiveMutation.mutate()}>
+              <Button
+                size="small"
+                onClick={() => archiveMutation.mutate()}
+                startIcon={<ArchiveIcon />}
+              >
                 {note?.archived_at ? 'Unarchive' : 'Archive'}
               </Button>
-              <Button size="small" component={RouterLink} to={`/admin/notes/${noteId}`}>
+              <Button
+                size="small"
+                component={RouterLink}
+                to={`/admin/notes/${noteId}`}
+                startIcon={<EyeIcon />}
+              >
                 View
               </Button>
               <Button
@@ -200,49 +240,81 @@ function NoteEditorPage() {
         </Alert>
       ) : null}
 
-      <Stack spacing={2}>
-        <TextField
-          label="Title"
-          fullWidth
-          placeholder="Untitled"
-          value={title}
-          onChange={(event) => setTitle(event.target.value)}
-          slotProps={{ input: { sx: { fontWeight: 600, fontSize: '1.25rem' } } }}
-        />
-        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-          <TextField
-            select
-            label="Notebook"
-            size="small"
-            sx={{ maxWidth: 260 }}
-            value={notebookId === null ? '' : String(notebookId)}
-            onChange={(event) => {
-              const value = event.target.value
-              setNotebookId(value === '' ? null : Number(value))
-            }}
+      <Paper
+        variant="outlined"
+        sx={{
+          borderRadius: 3,
+          overflow: 'hidden',
+          bgcolor: 'background.paper',
+          boxShadow: '0 1px 2px rgba(8, 6, 13, 0.04)',
+        }}
+      >
+        <Box sx={{ px: { xs: 2.5, md: 5.5 }, pt: { xs: 3, md: 4 }, pb: 2 }}>
+          <Typography
+            variant="overline"
+            sx={{ color: 'primary.main', fontWeight: 700, letterSpacing: 1.4, lineHeight: 1.4 }}
           >
-            <MenuItem value="">No notebook</MenuItem>
-            {(notebooks ?? []).map((option) => (
-              <MenuItem key={option.id} value={String(option.id)}>
-                {option.name}
-              </MenuItem>
-            ))}
-          </TextField>
+            Note
+          </Typography>
           <TextField
-            label="Tags"
-            size="small"
             fullWidth
-            placeholder="idea, personal, todo…"
-            value={tagsText}
-            onChange={(event) => setTagsText(event.target.value)}
+            variant="standard"
+            placeholder="Untitled"
+            value={title}
+            onChange={(event) => setTitle(event.target.value)}
+            slotProps={{
+              input: {
+                disableUnderline: true,
+                sx: {
+                  fontFamily: SERIF_FONT,
+                  fontSize: 'clamp(1.8rem, 1.4rem + 1.4vw, 2.35rem)',
+                  fontWeight: 600,
+                  letterSpacing: '-0.02em',
+                  lineHeight: 1.2,
+                  p: 0,
+                },
+              },
+              htmlInput: { 'aria-label': 'Note title' },
+            }}
           />
-        </Stack>
-        <MarkdownEditor
-          value={content}
-          onChange={setContent}
-          minRows={20}
-        />
-      </Stack>
+          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5} sx={{ mt: 2 }}>
+            <TextField
+              select
+              label="Notebook"
+              size="small"
+              sx={{ minWidth: { sm: 220 } }}
+              value={notebookId === null ? '' : String(notebookId)}
+              onChange={(event) => {
+                const value = event.target.value
+                setNotebookId(value === '' ? null : Number(value))
+              }}
+            >
+              <MenuItem value="">No notebook</MenuItem>
+              {(notebooks ?? []).map((option) => (
+                <MenuItem key={option.id} value={String(option.id)}>
+                  {option.name}
+                </MenuItem>
+              ))}
+            </TextField>
+            <TextField
+              label="Tags"
+              size="small"
+              fullWidth
+              placeholder="idea, personal, todo…"
+              value={tagsText}
+              onChange={(event) => setTagsText(event.target.value)}
+            />
+          </Stack>
+        </Box>
+        <Divider />
+        <Box sx={{ px: { xs: 2.5, md: 5.5 }, py: { xs: 2.5, md: 3.5 } }}>
+          <MarkdownEditor
+            value={content}
+            onChange={setContent}
+            minRows={20}
+          />
+        </Box>
+      </Paper>
     </Box>
   )
 }
