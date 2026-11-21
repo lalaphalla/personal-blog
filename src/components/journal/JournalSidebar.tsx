@@ -14,6 +14,7 @@ import {
   ClockIcon,
   HeartIcon,
   PlusIcon,
+  QuoteIcon,
   SearchIcon,
   SparklesIcon,
   SunIcon,
@@ -33,6 +34,7 @@ const PRIMARY_NAV: NavItem[] = [
   { label: 'Timeline', to: '/admin/journal/timeline', icon: <ClockIcon /> },
   { label: 'Favorites', to: '/admin/journal/favorites', icon: <HeartIcon /> },
   { label: 'Memories', to: '/admin/journal/memories', icon: <SparklesIcon /> },
+  { label: 'Quotes', to: '/admin/journal/quotes', icon: <QuoteIcon /> },
   { label: 'Search', to: '/admin/journal/search', icon: <SearchIcon /> },
 ]
 

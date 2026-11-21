@@ -25,6 +25,7 @@ import JournalSearchPage from './pages/admin/journal/JournalSearchPage'
 import JournalTodayPage from './pages/admin/journal/JournalTodayPage'
 import JournalTimelinePage from './pages/admin/journal/JournalTimelinePage'
 import JournalTrashPage from './pages/admin/journal/JournalTrashPage'
+import QuotesPage from './pages/admin/journal/QuotesPage'
 import { theme } from './theme'
 
 
@@ -63,6 +64,7 @@ function App() {
             <Route path="timeline" element={<JournalTimelinePage />} />
             <Route path="favorites" element={<JournalFavoritesPage />} />
             <Route path="memories" element={<JournalMemoriesPage />} />
+            <Route path="quotes" element={<QuotesPage />} />
             <Route path="search" element={<JournalSearchPage />} />
             <Route path="trash" element={<JournalTrashPage />} />
             <Route path=":id" element={<JournalDetailPage />} />

@@ -7,6 +7,7 @@ import Typography from '@mui/material/Typography'
 import { PlusIcon, SunIcon } from '../../../components/DocIcons'
 import JournalEntryCard from '../../../components/journal/JournalEntryCard'
 import PromptCard from '../../../components/journal/PromptCard'
+import TodayQuoteCard from '../../../components/quotes/TodayQuoteCard'
 import EmptyState from '../../../components/notes/EmptyState'
 import {
   useJournalMutations,
@@ -88,6 +89,9 @@ export default function JournalTodayPage() {
           Write about today
         </Button>
       </Stack>
+
+      {/* Daily Quote Card */}
+      <TodayQuoteCard />
 
       {/* Daily Prompt Banner */}
       {prompts && prompts.length > 0 && (
