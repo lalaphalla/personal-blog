@@ -1,6 +1,15 @@
 import { request } from './http'
 
-export type NoteView = 'all' | 'favorite' | 'archive'
+export type NoteView = 'all' | 'favorite' | 'archive' | 'unfiled'
+
+export interface NoteSummary {
+  all: number
+  favorites: number
+  archive: number
+  unfiled: number
+  notebooks: Array<{ id: number; count: number }>
+  tags: Array<{ tag: string; count: number }>
+}
 
 export interface Notebook {
   id: number
@@ -44,6 +53,10 @@ export function listNotebooks(): Promise<Notebook[]> {
 
 export function listAllTags(): Promise<string[]> {
   return request<{ tags: string[] }>('/admin/notes/tags').then((data) => data.tags)
+}
+
+export function getNotesSummary(): Promise<NoteSummary> {
+  return request<NoteSummary>('/admin/notes/summary')
 }
 
 export function createNotebook(input: { name: string; color?: string }): Promise<Notebook> {

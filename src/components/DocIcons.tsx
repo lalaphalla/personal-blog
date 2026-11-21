@@ -235,3 +235,45 @@ export function ExternalLinkIcon(props: SvgIconProps) {
     </StrokeIcon>
   )
 }
+
+export function ChevronRightIcon(props: SvgIconProps) {
+  return (
+    <StrokeIcon {...props}>
+      <path d="m9 18 6-6-6-6" />
+    </StrokeIcon>
+  )
+}
+
+export function MoreHorizontalIcon(props: SvgIconProps) {
+  return (
+    <StrokeIcon {...props}>
+      <path d="M5 12h.01M12 12h.01M19 12h.01" />
+    </StrokeIcon>
+  )
+}
+
+export function PanelLeftIcon(props: SvgIconProps) {
+  return (
+    <StrokeIcon {...props}>
+      <rect x="3" y="3" width="18" height="18" rx="2" />
+      <path d="M9 3v18" />
+    </StrokeIcon>
+  )
+}
+
+export function InboxIcon(props: SvgIconProps) {
+  return (
+    <StrokeIcon {...props}>
+      <path d="M22 12h-6l-2 3h-4l-2-3H2" />
+      <path d="M5.5 5.5 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.5-6.5A2 2 0 0 0 16.8 4H7.2a2 2 0 0 0-1.7 1.5Z" />
+    </StrokeIcon>
+  )
+}
+
+export function CloseIcon(props: SvgIconProps) {
+  return (
+    <StrokeIcon {...props}>
+      <path d="M18 6 6 18M6 6l12 12" />
+    </StrokeIcon>
+  )
+}

@@ -10,7 +10,8 @@ import DashboardPage from './pages/admin/DashboardPage'
 import LoginPage from './pages/admin/LoginPage'
 import MediaPage from './pages/admin/MediaPage'
 import NoteEditorPage from './pages/admin/NoteEditorPage'
-import NotesPage from './pages/admin/NotesPage'
+import NotesEmptyPane from './pages/admin/notes/NotesEmptyPane'
+import NotesWorkspace from './pages/admin/notes/NotesWorkspace'
 import PostEditorPage from './pages/admin/PostEditorPage'
 import PostsPage from './pages/admin/PostsPage'
 import { theme } from './theme'
@@ -30,10 +31,19 @@ function App() {
           <Route path="posts" element={<PostsPage />} />
           <Route path="posts/new" element={<PostEditorPage />} />
           <Route path="posts/:id/edit" element={<PostEditorPage />} />
-          <Route path="notes" element={<NotesPage />} />
-          <Route path="notes/new" element={<NoteEditorPage />} />
-          <Route path="notes/:id" element={<NoteViewPage />} />
-          <Route path="notes/:id/edit" element={<NoteEditorPage />} />
+          <Route path="notes" element={<NotesWorkspace />}>
+            <Route index element={<NotesEmptyPane />} />
+            <Route path="all" element={<NotesEmptyPane />} />
+            <Route path="favorites" element={<NotesEmptyPane />} />
+            <Route path="recent" element={<NotesEmptyPane />} />
+            <Route path="archive" element={<NotesEmptyPane />} />
+            <Route path="unfiled" element={<NotesEmptyPane />} />
+            <Route path="notebooks" element={<NotesEmptyPane />} />
+            <Route path="notebooks/:notebookId" element={<NotesEmptyPane />} />
+            <Route path="new" element={<NoteEditorPage />} />
+            <Route path=":id" element={<NoteViewPage />} />
+            <Route path=":id/edit" element={<NoteEditorPage />} />
+          </Route>
           <Route path="media" element={<MediaPage />} />
         </Route>
         <Route path="*" element={<Navigate to="/blog" replace />} />

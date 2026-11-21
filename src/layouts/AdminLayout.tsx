@@ -75,6 +75,7 @@ function AdminLayout() {
   }
 
   const { pathname } = location
+  const isNotesRoute = pathname.startsWith('/admin/notes')
   const tab = pathname.startsWith('/admin/posts')
     ? 1
     : pathname.startsWith('/admin/notes')
@@ -236,7 +237,18 @@ function AdminLayout() {
         </Box>
       </Drawer>
 
-      <Container component="main" maxWidth="lg" sx={{ py: { xs: 2.5, md: 4 }, flex: 1 }}>
+      <Container
+        component="main"
+        maxWidth={isNotesRoute ? false : 'lg'}
+        disableGutters={isNotesRoute}
+        sx={{
+          py: isNotesRoute ? 0 : { xs: 2.5, md: 4 },
+          flex: 1,
+          display: 'flex',
+          flexDirection: 'column',
+          minHeight: 0,
+        }}
+      >
         <Outlet />
       </Container>
     </Box>
