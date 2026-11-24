@@ -4,7 +4,6 @@ import AccordionDetails from '@mui/material/AccordionDetails'
 import AccordionSummary from '@mui/material/AccordionSummary'
 import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
-import Chip from '@mui/material/Chip'
 import CircularProgress from '@mui/material/CircularProgress'
 import IconButton from '@mui/material/IconButton'
 import Paper from '@mui/material/Paper'
@@ -23,6 +22,7 @@ import {
 } from '../DocIcons'
 import MarkdownEditor from '../admin/MarkdownEditor'
 import LiveMarkdownEditor from '../editor/LiveMarkdownEditor'
+import SmartTagInput from '../common/SmartTagInput'
 import MoodPicker from './MoodPicker'
 import AttachmentStrip from './AttachmentStrip'
 import type {
@@ -66,7 +66,6 @@ export default function JournalEditorForm({
   const [mood, setMood] = useState<Mood | null>(initialData?.mood ?? null)
   const [location, setLocation] = useState(initialData?.location || '')
   const [tags, setTags] = useState<string[]>(initialData?.tags || [])
-  const [tagInput, setTagInput] = useState('')
   const [isFavorite, setIsFavorite] = useState(initialData?.is_favorite || false)
 
   // Reflections
@@ -160,19 +159,6 @@ export default function JournalEditorForm({
       if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current)
     }
   }, [entryDate, title, content, mood, location, tags, gratitude, highlight, challenge, lesson])
-
-  // Tag addition
-  const handleAddTag = () => {
-    const clean = tagInput.trim().replace(/^#/, '')
-    if (clean && !tags.includes(clean)) {
-      setTags([...tags, clean])
-      setTagInput('')
-    }
-  }
-
-  const handleRemoveTag = (tagToRemove: string) => {
-    setTags(tags.filter((t) => t !== tagToRemove))
-  }
 
   return (
     <Stack spacing={3.5} sx={{ width: '100%' }}>
@@ -462,46 +448,11 @@ export default function JournalEditorForm({
             onChange={(e) => setLocation(e.target.value)}
           />
 
-          <Stack spacing={1}>
-            <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
-              <TextField
-                label="Tags"
-                size="small"
-                placeholder="Add a tag..."
-                value={tagInput}
-                onChange={(e) => setTagInput(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    e.preventDefault()
-                    handleAddTag()
-                  }
-                }}
-                sx={{ flexGrow: 1 }}
-              />
-              <Button
-                variant="outlined"
-                size="small"
-                onClick={handleAddTag}
-                sx={{ textTransform: 'none', borderRadius: 2 }}
-              >
-                Add
-              </Button>
-            </Stack>
-
-            {tags.length > 0 && (
-              <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap', gap: 1 }}>
-                {tags.map((t) => (
-                  <Chip
-                    key={t}
-                    label={t}
-                    onDelete={() => handleRemoveTag(t)}
-                    size="small"
-                    sx={{ borderRadius: 1.5 }}
-                  />
-                ))}
-              </Stack>
-            )}
-          </Stack>
+          <SmartTagInput
+            value={tags}
+            onChange={setTags}
+            placeholder="Add tags (e.g. #gratitude, #work)…"
+          />
         </Stack>
       </Paper>
     </Stack>

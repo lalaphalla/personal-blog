@@ -18,6 +18,7 @@ import Switch from '@mui/material/Switch'
 import TextField from '@mui/material/TextField'
 import Typography from '@mui/material/Typography'
 import { CameraIcon, TrashIcon } from '../DocIcons'
+import SmartTagInput from '../common/SmartTagInput'
 import { adminUploadImage } from '../../services/adminApi'
 import { useQuotesMutations } from '../../hooks/useQuotesQueries'
 import type { Quote, QuoteInput, SourceType } from '../../services/quotesApi'
@@ -53,7 +54,6 @@ export default function QuoteDialog({ open, quote, onClose }: QuoteDialogProps) 
   const [sourceUrl, setSourceUrl] = useState('')
   const [imageUrl, setImageUrl] = useState('')
   const [tags, setTags] = useState<string[]>([])
-  const [tagInput, setTagInput] = useState('')
   const [isFavorite, setIsFavorite] = useState(false)
   const [isActive, setIsActive] = useState(true)
 
@@ -100,21 +100,8 @@ export default function QuoteDialog({ open, quote, onClose }: QuoteDialogProps) 
       setIsFavorite(false)
       setIsActive(true)
     }
-    setTagInput('')
     setUploadError(null)
   }, [quote, open])
-
-  const handleAddTag = () => {
-    const trimmed = tagInput.trim().toLowerCase()
-    if (trimmed && !tags.includes(trimmed)) {
-      setTags([...tags, trimmed])
-      setTagInput('')
-    }
-  }
-
-  const handleRemoveTag = (tagToRemove: string) => {
-    setTags(tags.filter((t) => t !== tagToRemove))
-  }
 
   const handleImageFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -365,48 +352,12 @@ export default function QuoteDialog({ open, quote, onClose }: QuoteDialogProps) 
           </Box>
 
           {/* Tags */}
-          <Box>
-            <Typography variant="body2" sx={{ fontWeight: 600, color: 'text.secondary', mb: 1 }}>
-              Tags & Themes
-            </Typography>
-
-            <Stack direction="row" spacing={1} sx={{ mb: 1, flexWrap: 'wrap', gap: 0.5 }}>
-              {tags.map((tag) => (
-                <Chip
-                  key={tag}
-                  label={tag}
-                  size="small"
-                  onDelete={() => handleRemoveTag(tag)}
-                  color="primary"
-                  variant="outlined"
-                />
-              ))}
-            </Stack>
-
-            <Stack direction="row" spacing={1}>
-              <TextField
-                size="small"
-                placeholder="Add tag (e.g. wisdom, tech, mindset)"
-                value={tagInput}
-                onChange={(e) => setTagInput(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    e.preventDefault()
-                    handleAddTag()
-                  }
-                }}
-                fullWidth
-              />
-              <Button
-                variant="outlined"
-                size="small"
-                onClick={handleAddTag}
-                sx={{ textTransform: 'none', px: 2 }}
-              >
-                Add
-              </Button>
-            </Stack>
-          </Box>
+          <SmartTagInput
+            value={tags}
+            onChange={setTags}
+            label="Tags & Themes"
+            placeholder="Add tags (e.g. #wisdom, #mindset)…"
+          />
 
           {/* Options: Favorite & Active in daily rotation */}
           <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>

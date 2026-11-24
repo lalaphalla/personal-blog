@@ -352,4 +352,29 @@ export function QuoteIcon(props: SvgIconProps) {
   )
 }
 
+export function ChevronDownIcon(props: SvgIconProps) {
+  return (
+    <StrokeIcon {...props}>
+      <path d="m6 9 6 6 6-6" />
+    </StrokeIcon>
+  )
+}
+
+export function ChevronsLeftIcon(props: SvgIconProps) {
+  return (
+    <StrokeIcon {...props}>
+      <path d="m11 17-5-5 5-5m7 10-5-5 5-5" />
+    </StrokeIcon>
+  )
+}
+
+export function ChevronsRightIcon(props: SvgIconProps) {
+  return (
+    <StrokeIcon {...props}>
+      <path d="m6 17 5-5-5-5m7 10 5-5-5-5" />
+    </StrokeIcon>
+  )
+}
+
+
 

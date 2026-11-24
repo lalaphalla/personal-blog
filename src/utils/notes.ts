@@ -11,11 +11,19 @@ export function noteSnippet(content: string, length = 120): string {
   return content.replace(/\s+/g, ' ').trim().slice(0, length)
 }
 
+/** Parses date or ISO string as UTC if no timezone offset is provided */
+export function parseNoteUtcDate(value: string): Date {
+  if (!value) return new Date()
+  const trimmed = value.trim()
+  const hasTimezone = /[Zz]$|[+-]\d{2}(:?\d{2})?$/.test(trimmed)
+  return new Date(hasTimezone ? trimmed : `${trimmed}Z`)
+}
+
 const relativeTime = new Intl.RelativeTimeFormat('en', { numeric: 'auto' })
 
 /** "10 minutes ago", "Yesterday", then an absolute date for old notes. */
 export function noteRelativeTime(value: string): string {
-  const date = new Date(value)
+  const date = parseNoteUtcDate(value)
   const diffSeconds = Math.round((date.getTime() - Date.now()) / 1000)
   const absSeconds = Math.abs(diffSeconds)
 
@@ -34,7 +42,7 @@ export function noteRelativeTime(value: string): string {
 
 /** Detailed timestamp for the note document + properties. */
 export function formatNoteDateTime(value: string): string {
-  return new Date(value).toLocaleString(undefined, {
+  return parseNoteUtcDate(value).toLocaleString(undefined, {
     year: 'numeric',
     month: 'short',
     day: 'numeric',
@@ -50,7 +58,7 @@ export function sortNotes(notes: Note[], sort: NoteSort): Note[] {
     return sorted
   }
   const key = sort === 'created' ? 'created_at' : 'updated_at'
-  sorted.sort((a, b) => new Date(b[key]).getTime() - new Date(a[key]).getTime())
+  sorted.sort((a, b) => parseNoteUtcDate(b[key]).getTime() - parseNoteUtcDate(a[key]).getTime())
   return sorted
 }
 

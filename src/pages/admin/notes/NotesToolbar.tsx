@@ -10,9 +10,11 @@ import Tooltip from '@mui/material/Tooltip'
 import Typography from '@mui/material/Typography'
 import { Link as RouterLink } from 'react-router'
 import { PanelLeftIcon, PlusIcon, SearchIcon } from '../../../components/DocIcons'
+import type { NotesScope } from '../../../hooks/useNotesScope'
 import type { NoteSort } from '../../../utils/notes'
 
 interface NotesToolbarProps {
+  scope?: NotesScope
   scopeLabel: string
   count?: number
   showSidebarToggle: boolean
@@ -27,6 +29,7 @@ interface NotesToolbarProps {
 
 /** Header strip for the notes list pane: scope, filter, sort, and create. */
 export default function NotesToolbar({
+  scope,
   scopeLabel,
   count,
   showSidebarToggle,
@@ -38,6 +41,15 @@ export default function NotesToolbar({
   sort,
   onSortChange,
 }: NotesToolbarProps) {
+  const newNoteSearch = new URLSearchParams()
+  if (scope?.kind === 'notebook') {
+    newNoteSearch.set('notebook_id', String(scope.id))
+    newNoteSearch.set('scope', `notebooks/${scope.id}`)
+  } else if (scope && scope.kind !== 'all') {
+    newNoteSearch.set('scope', scope.kind)
+  }
+  const newNoteTo = `/admin/notes/new${newNoteSearch.toString() ? `?${newNoteSearch.toString()}` : ''}`
+
   return (
     <Box
       sx={{
@@ -68,7 +80,7 @@ export default function NotesToolbar({
         </Box>
         <Button
           component={RouterLink}
-          to="/admin/notes/new"
+          to={newNoteTo}
           size="small"
           variant="contained"
           startIcon={<PlusIcon sx={{ fontSize: 16 }} />}

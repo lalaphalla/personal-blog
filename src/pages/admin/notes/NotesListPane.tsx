@@ -244,6 +244,7 @@ export default function NotesListPane({
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0, bgcolor: 'background.paper' }}>
       <NotesToolbar
+        scope={scope}
         scopeLabel={scopeLabel}
         count={sortedNotes?.length}
         showSidebarToggle={showSidebarToggle}
@@ -312,7 +313,16 @@ export default function NotesListPane({
                   Clear filters
                 </Button>
               ) : (
-                <Button size="small" component={RouterLink} to="/admin/notes/new" startIcon={<PlusIcon />}>
+                <Button
+                  size="small"
+                  component={RouterLink}
+                  to={
+                    scope.kind === 'notebook'
+                      ? `/admin/notes/new?notebook_id=${scope.id}&scope=notebooks/${scope.id}`
+                      : `/admin/notes/new?scope=${scopeKeyForLink}`
+                  }
+                  startIcon={<PlusIcon />}
+                >
                   New note
                 </Button>
               )

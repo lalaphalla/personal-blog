@@ -22,6 +22,7 @@ import {
 } from '../DocIcons'
 import MarkdownEditor from '../admin/MarkdownEditor'
 import LiveMarkdownEditor from '../editor/LiveMarkdownEditor'
+import SmartTagInput from '../common/SmartTagInput'
 import { getErrorMessage } from '../../config/queryClient'
 import {
   archiveNote,
@@ -43,20 +44,14 @@ function snapshot(
   title: string,
   content: string,
   notebookId: number | null,
-  tagsText: string,
+  tags: string[],
 ): string {
-  return JSON.stringify({ title, content, notebookId, tagsText })
-}
-
-function parseTags(value: string): string[] {
-  return value
-    .split(',')
-    .map((tag) => tag.trim())
-    .filter(Boolean)
+  return JSON.stringify({ title, content, notebookId, tags })
 }
 
 interface NoteEditorFormProps {
   noteId?: number
+  defaultNotebookId?: number | null
   onDone: (id: number) => void
   onDeleted: () => void
   /** Called after a brand-new note is created (route replace to /:id/edit). */
@@ -72,6 +67,7 @@ interface NoteEditorFormProps {
  */
 export default function NoteEditorForm({
   noteId: initialNoteId,
+  defaultNotebookId = null,
   onDone,
   onDeleted,
   onCreated,
@@ -81,8 +77,8 @@ export default function NoteEditorForm({
 
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
-  const [tagsText, setTagsText] = useState('')
-  const [notebookId, setNotebookId] = useState<number | null>(null)
+  const [tags, setTags] = useState<string[]>([])
+  const [notebookId, setNotebookId] = useState<number | null>(defaultNotebookId ?? null)
   const [editorMode, setEditorMode] = useState<'live' | 'standard'>('live')
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle')
   const [saveError, setSaveError] = useState<string | null>(null)
@@ -90,13 +86,20 @@ export default function NoteEditorForm({
 
   const noteIdRef = useRef<number | undefined>(initialNoteId)
   const loadedRef = useRef(!initialNoteId)
-  const lastSavedRef = useRef<string | null>(null)
+  const lastSavedRef = useRef<string | null>(
+    !initialNoteId ? snapshot('', '', defaultNotebookId ?? null, []) : null
+  )
   const timerRef = useRef<number | undefined>(undefined)
-  const latestRef = useRef({ title: '', content: '', notebookId, tagsText })
+  const latestRef = useRef<{ title: string; content: string; notebookId: number | null; tags: string[] }>({
+    title: '',
+    content: '',
+    notebookId: defaultNotebookId ?? null,
+    tags: [],
+  })
 
   useEffect(() => {
-    latestRef.current = { title, content, notebookId, tagsText }
-  }, [title, content, notebookId, tagsText])
+    latestRef.current = { title, content, notebookId, tags }
+  }, [title, content, notebookId, tags])
 
   const { data: notebooks } = useQuery({
     queryKey: ['admin', 'notebooks'],
@@ -114,26 +117,26 @@ export default function NoteEditorForm({
     if (!initialNoteId || !note || loadedRef.current) return
     setTitle(note.title)
     setContent(note.content)
-    setTagsText(note.tags.join(', '))
+    setTags(note.tags || [])
     setNotebookId(note.notebook_id)
     lastSavedRef.current = snapshot(
       note.title,
       note.content,
       note.notebook_id,
-      note.tags.join(', '),
+      note.tags || [],
     )
     loadedRef.current = true
   }, [note, initialNoteId])
 
   const persist = async (): Promise<{ ok: boolean; id?: number }> => {
     const current = latestRef.current
-    const next = snapshot(current.title, current.content, current.notebookId, current.tagsText)
+    const next = snapshot(current.title, current.content, current.notebookId, current.tags)
     if (next === lastSavedRef.current) return { ok: true, id: noteIdRef.current }
 
     const payload = {
       title: current.title,
       content: current.content,
-      tags: parseTags(current.tagsText),
+      tags: current.tags,
       notebook_id: current.notebookId,
     }
 
@@ -167,14 +170,14 @@ export default function NoteEditorForm({
   // Debounced autosave. State updates happen in the input handlers, not here.
   useEffect(() => {
     if (!loadedRef.current) return undefined
-    const next = snapshot(title, content, notebookId, tagsText)
+    const next = snapshot(title, content, notebookId, tags)
     if (next === lastSavedRef.current) return undefined
     window.clearTimeout(timerRef.current)
     timerRef.current = window.setTimeout(() => {
       void persistRef.current()
     }, AUTOSAVE_DELAY)
     return () => window.clearTimeout(timerRef.current)
-  }, [title, content, notebookId, tagsText])
+  }, [title, content, notebookId, tags])
 
   // Flush pending edits when the editor unmounts (switching notes or closing).
   // This is best-effort: destructive navigation is not blocked when it fails.
@@ -184,13 +187,13 @@ export default function NoteEditorForm({
       const id = noteIdRef.current
       const current = latestRef.current
       if (!loadedRef.current || !id) return
-      if (snapshot(current.title, current.content, current.notebookId, current.tagsText) === lastSavedRef.current) {
+      if (snapshot(current.title, current.content, current.notebookId, current.tags) === lastSavedRef.current) {
         return
       }
       void updateNote(id, {
         title: current.title,
         content: current.content,
-        tags: parseTags(current.tagsText),
+        tags: current.tags,
         notebook_id: current.notebookId,
       }).catch(() => {})
     }
@@ -417,17 +420,16 @@ export default function NoteEditorForm({
                   </MenuItem>
                 ))}
               </TextField>
-              <TextField
-                label="Tags"
-                size="small"
-                fullWidth
-                placeholder="idea, personal, todo…"
-                value={tagsText}
-                onChange={(event) => {
-                  setTagsText(event.target.value)
-                  markDirty()
-                }}
-              />
+              <Box sx={{ flex: 1, minWidth: { sm: 260 } }}>
+                <SmartTagInput
+                  value={tags}
+                  onChange={(nextTags) => {
+                    setTags(nextTags)
+                    markDirty()
+                  }}
+                  fullWidth
+                />
+              </Box>
             </Stack>
           </Box>
           <Divider />

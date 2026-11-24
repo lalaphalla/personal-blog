@@ -292,7 +292,7 @@ export default function JournalDetailPage() {
                     <Typography variant="caption" sx={{ fontWeight: 700, color: 'text.secondary', display: 'block' }}>
                       ✨ Highlight
                     </Typography>
-                    <Typography variant="body1" sx={{ mt: 0.5 }}>
+                    <Typography variant="body1" sx={{ mt: 0.5, whiteSpace: 'pre-line' }}>
                       {entry.highlight}
                     </Typography>
                   </Paper>
@@ -312,7 +312,7 @@ export default function JournalDetailPage() {
                     <Typography variant="caption" sx={{ fontWeight: 700, color: 'text.secondary', display: 'block' }}>
                       🙏 Gratitude
                     </Typography>
-                    <Typography variant="body1" sx={{ mt: 0.5 }}>
+                    <Typography variant="body1" sx={{ mt: 0.5, whiteSpace: 'pre-line' }}>
                       {entry.gratitude}
                     </Typography>
                   </Paper>
@@ -332,7 +332,7 @@ export default function JournalDetailPage() {
                     <Typography variant="caption" sx={{ fontWeight: 700, color: 'text.secondary', display: 'block' }}>
                       ⚡ Challenge
                     </Typography>
-                    <Typography variant="body1" sx={{ mt: 0.5 }}>
+                    <Typography variant="body1" sx={{ mt: 0.5, whiteSpace: 'pre-line' }}>
                       {entry.challenge}
                     </Typography>
                   </Paper>
@@ -352,7 +352,7 @@ export default function JournalDetailPage() {
                     <Typography variant="caption" sx={{ fontWeight: 700, color: 'text.secondary', display: 'block' }}>
                       💡 Lesson
                     </Typography>
-                    <Typography variant="body1" sx={{ mt: 0.5 }}>
+                    <Typography variant="body1" sx={{ mt: 0.5, whiteSpace: 'pre-line' }}>
                       {entry.lesson}
                     </Typography>
                   </Paper>

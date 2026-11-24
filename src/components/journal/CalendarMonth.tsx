@@ -1,11 +1,22 @@
+import { useState } from 'react'
 import Box from '@mui/material/Box'
+import Button from '@mui/material/Button'
 import ButtonBase from '@mui/material/ButtonBase'
 import IconButton from '@mui/material/IconButton'
 import Paper from '@mui/material/Paper'
 import Stack from '@mui/material/Stack'
+import Tooltip from '@mui/material/Tooltip'
 import Typography from '@mui/material/Typography'
 import { alpha, useTheme } from '@mui/material/styles'
-import { CameraIcon, ChevronLeftIcon, ChevronRightIcon } from '../DocIcons'
+import {
+  CameraIcon,
+  ChevronDownIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  ChevronsLeftIcon,
+  ChevronsRightIcon,
+} from '../DocIcons'
+import CalendarQuickJumpPopover from './CalendarQuickJumpPopover'
 import type { JournalCalendarDay } from '../../services/journalApi'
 import { getLocalTodayDateString, getMoodMeta } from '../../utils/journal'
 
@@ -15,7 +26,11 @@ interface CalendarMonthProps {
   days: JournalCalendarDay[]
   onPrevMonth: () => void
   onNextMonth: () => void
+  onPrevYear: () => void
+  onNextYear: () => void
   onSelectDate: (date: string) => void
+  onSelectYearMonth: (year: number, month: number) => void
+  onToday: () => void
 }
 
 const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
@@ -26,10 +41,18 @@ export default function CalendarMonth({
   days,
   onPrevMonth,
   onNextMonth,
+  onPrevYear,
+  onNextYear,
   onSelectDate,
+  onSelectYearMonth,
+  onToday,
 }: CalendarMonthProps) {
   const theme = useTheme()
   const todayStr = getLocalTodayDateString()
+  const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null)
+
+  const today = new Date()
+  const isCurrentMonth = today.getFullYear() === year && today.getMonth() + 1 === month
 
   // Map entries by date YYYY-MM-DD
   const dayMap = new Map<string, JournalCalendarDay>()
@@ -63,22 +86,93 @@ export default function CalendarMonth({
     >
       {/* Month Header */}
       <Stack
-        direction="row"
-        sx={{ alignItems: 'center', justifyContent: 'space-between', mb: 2.5 }}
+        direction={{ xs: 'column', sm: 'row' }}
+        spacing={2}
+        sx={{
+          alignItems: { xs: 'flex-start', sm: 'center' },
+          justifyContent: 'space-between',
+          mb: 2.5,
+        }}
       >
-        <Typography variant="h5" sx={{ fontWeight: 700 }}>
-          {monthName}
-        </Typography>
+        {/* Clickable Month-Year Name triggering Quick Jump Popover */}
+        <Tooltip title="Click to quickly jump to any month or year">
+          <ButtonBase
+            onClick={(e) => setAnchorEl(e.currentTarget)}
+            sx={{
+              borderRadius: 2,
+              px: 1.25,
+              py: 0.5,
+              mx: -1.25,
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 1,
+              transition: 'background-color 0.15s ease',
+              '&:hover': { bgcolor: (theme) => alpha(theme.palette.primary.main, 0.08) },
+            }}
+          >
+            <Typography variant="h5" sx={{ fontWeight: 800, letterSpacing: -0.5 }}>
+              {monthName}
+            </Typography>
+            <ChevronDownIcon sx={{ color: 'text.secondary', fontSize: 20 }} />
+          </ButtonBase>
+        </Tooltip>
 
-        <Stack direction="row" spacing={1}>
-          <IconButton onClick={onPrevMonth} size="small" aria-label="Previous month">
-            <ChevronLeftIcon />
-          </IconButton>
-          <IconButton onClick={onNextMonth} size="small" aria-label="Next month">
-            <ChevronRightIcon />
-          </IconButton>
+        {/* Quick Nav Controls */}
+        <Stack direction="row" spacing={0.5} sx={{ alignItems: 'center' }}>
+          {!isCurrentMonth && (
+            <Button
+              size="small"
+              variant="outlined"
+              onClick={onToday}
+              sx={{
+                borderRadius: 2,
+                textTransform: 'none',
+                fontWeight: 650,
+                fontSize: '0.75rem',
+                py: 0.25,
+                px: 1.25,
+                mr: 0.5,
+              }}
+            >
+              Today
+            </Button>
+          )}
+
+          <Tooltip title="Previous year">
+            <IconButton onClick={onPrevYear} size="small" aria-label="Previous year">
+              <ChevronsLeftIcon sx={{ fontSize: 18 }} />
+            </IconButton>
+          </Tooltip>
+
+          <Tooltip title="Previous month">
+            <IconButton onClick={onPrevMonth} size="small" aria-label="Previous month">
+              <ChevronLeftIcon sx={{ fontSize: 18 }} />
+            </IconButton>
+          </Tooltip>
+
+          <Tooltip title="Next month">
+            <IconButton onClick={onNextMonth} size="small" aria-label="Next month">
+              <ChevronRightIcon sx={{ fontSize: 18 }} />
+            </IconButton>
+          </Tooltip>
+
+          <Tooltip title="Next year">
+            <IconButton onClick={onNextYear} size="small" aria-label="Next year">
+              <ChevronsRightIcon sx={{ fontSize: 18 }} />
+            </IconButton>
+          </Tooltip>
         </Stack>
       </Stack>
+
+      {/* Quick Jump Popover */}
+      <CalendarQuickJumpPopover
+        open={Boolean(anchorEl)}
+        anchorEl={anchorEl}
+        year={year}
+        month={month}
+        onClose={() => setAnchorEl(null)}
+        onSelect={onSelectYearMonth}
+      />
 
       {/* Weekday Labels */}
       <Box

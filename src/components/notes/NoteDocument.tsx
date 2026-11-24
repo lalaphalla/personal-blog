@@ -42,7 +42,8 @@ const documentSx = {
   lineHeight: 1.85,
   '& > :first-of-type': { mt: 0 },
   '& > :last-child': { mb: 0 },
-  '& p, & ul, & ol': { my: 0, mb: 2.25 },
+  '& p': { my: 0, mb: 2.25, whiteSpace: 'pre-line' },
+  '& ul, & ol': { my: 0, mb: 2.25, pl: 3 },
   '& li': { mb: 0.65 },
   '& h1, & h2, & h3, & h4': {
     fontFamily: SERIF_FONT,
@@ -53,7 +54,6 @@ const documentSx = {
   '& h2': { mt: 3.5, mb: 1.25, fontSize: '1.45rem', fontWeight: 600, letterSpacing: '-0.01em' },
   '& h3': { mt: 2.5, mb: 1, fontSize: '1.15rem', fontWeight: 600 },
   '& h4': { mt: 2, mb: 0.75, fontSize: '1rem', fontWeight: 600 },
-  '& ul, & ol': { pl: 3 },
   '& li::marker': { color: 'primary.main' },
   '& a': { color: 'primary.main', textDecorationColor: 'currentColor' },
   '& blockquote': {

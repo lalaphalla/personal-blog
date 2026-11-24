@@ -1,5 +1,4 @@
-import { useState } from 'react'
-import { useNavigate } from 'react-router'
+import { useNavigate, useSearchParams } from 'react-router'
 import Box from '@mui/material/Box'
 import CircularProgress from '@mui/material/CircularProgress'
 import Stack from '@mui/material/Stack'
@@ -10,28 +9,64 @@ import { useJournalCalendar } from '../../../hooks/useJournalQueries'
 
 export default function JournalCalendarPage() {
   const navigate = useNavigate()
+  const [searchParams, setSearchParams] = useSearchParams()
+
   const today = new Date()
-  const [year, setYear] = useState(today.getFullYear())
-  const [month, setMonth] = useState(today.getMonth() + 1) // 1-12
+  const currentYear = today.getFullYear()
+  const currentMonth = today.getMonth() + 1 // 1-12
+
+  const yearParam = searchParams.get('year')
+  const monthParam = searchParams.get('month')
+
+  const parsedYear = yearParam ? parseInt(yearParam, 10) : NaN
+  const parsedMonth = monthParam ? parseInt(monthParam, 10) : NaN
+
+  const year =
+    !isNaN(parsedYear) && parsedYear >= 1900 && parsedYear <= 2100 ? parsedYear : currentYear
+  const month =
+    !isNaN(parsedMonth) && parsedMonth >= 1 && parsedMonth <= 12 ? parsedMonth : currentMonth
 
   const { data: calendarData, isPending, isError } = useJournalCalendar(year, month)
 
+  const setYearMonth = (newYear: number, newMonth: number) => {
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev)
+      next.set('year', String(newYear))
+      next.set('month', String(newMonth))
+      return next
+    })
+  }
+
   const handlePrevMonth = () => {
     if (month === 1) {
-      setYear(year - 1)
-      setMonth(12)
+      setYearMonth(year - 1, 12)
     } else {
-      setMonth(month - 1)
+      setYearMonth(year, month - 1)
     }
   }
 
   const handleNextMonth = () => {
     if (month === 12) {
-      setYear(year + 1)
-      setMonth(1)
+      setYearMonth(year + 1, 1)
     } else {
-      setMonth(month + 1)
+      setYearMonth(year, month + 1)
     }
+  }
+
+  const handlePrevYear = () => {
+    setYearMonth(year - 1, month)
+  }
+
+  const handleNextYear = () => {
+    setYearMonth(year + 1, month)
+  }
+
+  const handleToday = () => {
+    setYearMonth(currentYear, currentMonth)
+  }
+
+  const handleSelectYearMonth = (newYear: number, newMonth: number) => {
+    setYearMonth(newYear, newMonth)
   }
 
   const handleSelectDate = (dateStr: string) => {
@@ -65,6 +100,10 @@ export default function JournalCalendarPage() {
           days={calendarData.days}
           onPrevMonth={handlePrevMonth}
           onNextMonth={handleNextMonth}
+          onPrevYear={handlePrevYear}
+          onNextYear={handleNextYear}
+          onToday={handleToday}
+          onSelectYearMonth={handleSelectYearMonth}
           onSelectDate={handleSelectDate}
         />
       )}

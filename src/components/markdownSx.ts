@@ -2,7 +2,8 @@
 export const markdownSx = {
   color: 'text.primary',
   lineHeight: 1.75,
-  '& p, & ul, & ol': { my: 0, mb: 2 },
+  '& p': { my: 0, mb: 2, whiteSpace: 'pre-line' },
+  '& ul, & ol': { my: 0, mb: 2 },
   '& li': { mb: 0.5 },
   '& h2': {
     mt: 3,
