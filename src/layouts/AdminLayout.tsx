@@ -29,6 +29,7 @@ import {
   MenuIcon,
   MindmapIcon,
   NewspaperIcon,
+  RecallIcon,
 } from '../components/DocIcons'
 import { getMe, logout } from '../services/authApi'
 
@@ -38,6 +39,7 @@ const NAV_ITEMS = [
   { label: 'Notes', to: '/admin/notes', icon: <FileTextIcon />, end: false },
   { label: 'Journal', to: '/admin/journal', icon: <BookOpenIcon />, end: false },
   { label: 'Mindmaps', to: '/admin/mindmaps', icon: <MindmapIcon />, end: false },
+  { label: 'Recall', to: '/admin/recall', icon: <RecallIcon />, end: false },
   { label: 'Media', to: '/admin/media', icon: <ImageIcon />, end: false },
 ]
 
@@ -62,7 +64,7 @@ function AdminLayout() {
       queryClient.invalidateQueries({ queryKey: ['admin', 'posts'] })
       navigate('/admin/login', { replace: true })
     },
-    onError: () => {}, // handled by onSettled redirect; errors are global via cache
+    onError: () => { }, // handled by onSettled redirect; errors are global via cache
     meta: { suppressGlobalError: true },
   })
 
@@ -91,9 +93,11 @@ function AdminLayout() {
         ? 3
         : pathname.startsWith('/admin/mindmaps')
           ? 4
-          : pathname.startsWith('/admin/media')
+          : pathname.startsWith('/admin/recall')
             ? 5
-            : 0
+            : pathname.startsWith('/admin/media')
+              ? 6
+              : 0
 
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: 'grey.50', display: 'flex', flexDirection: 'column' }}>
@@ -130,6 +134,7 @@ function AdminLayout() {
             <Tab label="Notes" component={NavLink} to="/admin/notes" />
             <Tab label="Journal" component={NavLink} to="/admin/journal" />
             <Tab label="Mindmaps" component={NavLink} to="/admin/mindmaps" />
+            <Tab label="Recall" component={NavLink} to="/admin/recall" />
             <Tab label="Media" component={NavLink} to="/admin/media" />
           </Tabs>
           <Button
@@ -185,7 +190,7 @@ function AdminLayout() {
             </Box>
             <Box sx={{ minWidth: 0 }}>
               <Typography variant="subtitle1" sx={{ fontWeight: 700, lineHeight: 1.2 }} noWrap>
-                Blog Admin
+                Admin
               </Typography>
               <Typography variant="caption" color="text.secondary" noWrap>
                 {user.username}

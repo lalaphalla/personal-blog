@@ -390,5 +390,16 @@ export function MindmapIcon(props: SvgIconProps) {
   )
 }
 
+export function RecallIcon(props: SvgIconProps) {
+  return (
+    <StrokeIcon {...props}>
+      <rect x="3" y="5" width="14" height="14" rx="2" />
+      <path d="M7 5V3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1h-2" />
+      <path d="M7 10h6" />
+      <path d="M7 14h4" />
+    </StrokeIcon>
+  )
+}
+
 
 
