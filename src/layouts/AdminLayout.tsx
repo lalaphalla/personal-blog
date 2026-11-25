@@ -122,7 +122,7 @@ function AdminLayout() {
               fontSize: { xs: '1.05rem', md: '1.25rem' },
             }}
           >
-            Blog Admin
+            Admin
           </Typography>
           <Tabs
             value={tab}
