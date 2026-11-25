@@ -376,5 +376,19 @@ export function ChevronsRightIcon(props: SvgIconProps) {
   )
 }
 
+export function MindmapIcon(props: SvgIconProps) {
+  return (
+    <StrokeIcon {...props}>
+      <rect x="2" y="9" width="6" height="6" rx="1.5" />
+      <rect x="16" y="3" width="6" height="5" rx="1.5" />
+      <rect x="16" y="16" width="6" height="5" rx="1.5" />
+      <path d="M8 12h4" />
+      <path d="M12 5.5v13" />
+      <path d="M12 5.5h4" />
+      <path d="M12 18.5h4" />
+    </StrokeIcon>
+  )
+}
+
 
 

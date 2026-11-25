@@ -25,6 +25,8 @@ import JournalSearchPage from './pages/admin/journal/JournalSearchPage'
 import JournalTodayPage from './pages/admin/journal/JournalTodayPage'
 import JournalTimelinePage from './pages/admin/journal/JournalTimelinePage'
 import JournalTrashPage from './pages/admin/journal/JournalTrashPage'
+import MindmapEditorPage from './pages/admin/mindmap/MindmapEditorPage'
+import MindmapListPage from './pages/admin/mindmap/MindmapListPage'
 import QuotesPage from './pages/admin/journal/QuotesPage'
 import { theme } from './theme'
 
@@ -70,6 +72,8 @@ function App() {
             <Route path=":id" element={<JournalDetailPage />} />
             <Route path=":id/edit" element={<JournalEditorPage />} />
           </Route>
+          <Route path="mindmaps" element={<MindmapListPage />} />
+          <Route path="mindmaps/:id" element={<MindmapEditorPage />} />
           <Route path="media" element={<MediaPage />} />
         </Route>
         <Route path="*" element={<Navigate to="/blog" replace />} />

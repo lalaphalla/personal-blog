@@ -27,6 +27,7 @@ import {
   LayoutDashboardIcon,
   LogOutIcon,
   MenuIcon,
+  MindmapIcon,
   NewspaperIcon,
 } from '../components/DocIcons'
 import { getMe, logout } from '../services/authApi'
@@ -36,6 +37,7 @@ const NAV_ITEMS = [
   { label: 'Posts', to: '/admin/posts', icon: <NewspaperIcon />, end: false },
   { label: 'Notes', to: '/admin/notes', icon: <FileTextIcon />, end: false },
   { label: 'Journal', to: '/admin/journal', icon: <BookOpenIcon />, end: false },
+  { label: 'Mindmaps', to: '/admin/mindmaps', icon: <MindmapIcon />, end: false },
   { label: 'Media', to: '/admin/media', icon: <ImageIcon />, end: false },
 ]
 
@@ -79,16 +81,19 @@ function AdminLayout() {
   const { pathname } = location
   const isNotesRoute = pathname.startsWith('/admin/notes')
   const isJournalRoute = pathname.startsWith('/admin/journal')
-  const isFullBleed = isNotesRoute || isJournalRoute
+  const isMindmapRoute = pathname.startsWith('/admin/mindmaps')
+  const isFullBleed = isNotesRoute || isJournalRoute || isMindmapRoute
   const tab = pathname.startsWith('/admin/posts')
     ? 1
     : pathname.startsWith('/admin/notes')
       ? 2
       : pathname.startsWith('/admin/journal')
         ? 3
-        : pathname.startsWith('/admin/media')
+        : pathname.startsWith('/admin/mindmaps')
           ? 4
-          : 0
+          : pathname.startsWith('/admin/media')
+            ? 5
+            : 0
 
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: 'grey.50', display: 'flex', flexDirection: 'column' }}>
@@ -124,6 +129,7 @@ function AdminLayout() {
             <Tab label="Posts" component={NavLink} to="/admin/posts" />
             <Tab label="Notes" component={NavLink} to="/admin/notes" />
             <Tab label="Journal" component={NavLink} to="/admin/journal" />
+            <Tab label="Mindmaps" component={NavLink} to="/admin/mindmaps" />
             <Tab label="Media" component={NavLink} to="/admin/media" />
           </Tabs>
           <Button
