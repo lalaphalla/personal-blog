@@ -45,9 +45,10 @@ function ImageCard({
       >
         <Box
           component="img"
-          src={image.url}
+          src={image.thumbnail_url || image.url}
           alt={image.filename}
           loading="lazy"
+          decoding="async"
           sx={{ width: '100%', height: 160, objectFit: 'cover', display: 'block' }}
         />
       </Box>

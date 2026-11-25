@@ -1,35 +1,64 @@
-import { useState } from 'react'
-import type { JournalEntryInput } from '../services/journalApi'
+import type { Mood } from '../services/journalApi'
 
-const DRAFT_KEY = 'journal.draft.new'
+/**
+ * Invisible write-through drafts — Apple-Journal-style local-first insurance.
+ *
+ * While there are unsaved changes, a debounced snapshot is kept in localStorage so a
+ * refresh, closed tab, offline network or failed save can never destroy typing. Drafts are
+ * restored silently on mount (there is never a "Restore?" prompt) and cleared on every
+ * successful save. Scopes: `new.<date>` for unsaved drafts, `entry.<id>` while editing a
+ * saved entry.
+ *
+ * See docs/journal-autosave-loss.md §4 P0 #4.
+ */
 
-export function useJournalDraft() {
-  const [draft, setDraft] = useState<Partial<JournalEntryInput> | null>(() => {
-    try {
-      const saved = localStorage.getItem(DRAFT_KEY)
-      return saved ? JSON.parse(saved) : null
-    } catch {
-      return null
-    }
-  })
+/** The editable fields of a journal entry (everything autosave persists). */
+export interface JournalDraftData {
+  entryDate: string
+  title: string
+  content: string
+  mood: Mood | null
+  location: string
+  tags: string[]
+  gratitude: string
+  highlight: string
+  challenge: string
+  lesson: string
+  isFavorite: boolean
+  promptId: number | null
+}
 
-  const saveDraft = (data: Partial<JournalEntryInput>) => {
-    try {
-      localStorage.setItem(DRAFT_KEY, JSON.stringify(data))
-      setDraft(data)
-    } catch {
-      // Ignore localStorage quotas or private mode restrictions
-    }
+export interface JournalDraft extends JournalDraftData {
+  savedAt: number
+}
+
+function draftKey(scope: string): string {
+  return `journal.draft.${scope}`
+}
+
+export function readDraft(scope: string): JournalDraft | null {
+  try {
+    const raw = localStorage.getItem(draftKey(scope))
+    if (!raw) return null
+    const parsed = JSON.parse(raw) as JournalDraft
+    return typeof parsed?.content === 'string' ? parsed : null
+  } catch {
+    return null
   }
+}
 
-  const clearDraft = () => {
-    try {
-      localStorage.removeItem(DRAFT_KEY)
-      setDraft(null)
-    } catch {
-      // Ignore
-    }
+export function writeDraft(scope: string, draft: JournalDraftData): void {
+  try {
+    localStorage.setItem(draftKey(scope), JSON.stringify({ ...draft, savedAt: Date.now() }))
+  } catch {
+    // Private mode or quota exceeded — the server autosave remains the safety net.
   }
+}
 
-  return { draft, saveDraft, clearDraft }
+export function clearDraft(scope: string): void {
+  try {
+    localStorage.removeItem(draftKey(scope))
+  } catch {
+    // Ignore
+  }
 }

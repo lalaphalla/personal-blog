@@ -1,5 +1,6 @@
 import { request } from './http'
 import type { Post, PostInput, PostPage, PostStatus } from '../types/blog'
+import { compressImageForUpload } from '../utils/imageCompression'
 
 export interface AdminListParams {
   page?: number
@@ -10,6 +11,7 @@ export interface AdminListParams {
 export interface UploadedImage {
   filename: string
   url: string
+  thumbnail_url?: string | null
   size_bytes: number
   created_at: number
 }
@@ -18,9 +20,10 @@ export function adminListImages(): Promise<UploadedImage[]> {
   return request<UploadedImage[]>('/admin/uploads')
 }
 
-export function adminUploadImage(file: File): Promise<UploadedImage> {
+export async function adminUploadImage(file: File): Promise<UploadedImage> {
+  const prepared = await compressImageForUpload(file)
   const data = new FormData()
-  data.append('file', file)
+  data.append('file', prepared)
   return request<UploadedImage>('/admin/uploads', { method: 'POST', body: data })
 }
 

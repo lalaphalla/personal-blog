@@ -6,6 +6,7 @@ import Stack from '@mui/material/Stack'
 import Typography from '@mui/material/Typography'
 import { alpha } from '@mui/material/styles'
 import { CameraIcon, HeartIcon, TagIcon } from '../DocIcons'
+import JournalMediaCollage from './JournalMediaCollage'
 import type { JournalEntrySummary } from '../../services/journalApi'
 import { formatJournalTime, formatShortJournalDate, getMoodMeta } from '../../utils/journal'
 
@@ -104,6 +105,14 @@ export default function JournalEntryCard({
           </Typography>
         ) : null}
 
+        {/* Photo collage */}
+        {entry.preview_images && entry.preview_images.length > 0 && (
+          <JournalMediaCollage
+            images={entry.preview_images}
+            totalCount={entry.attachment_count}
+          />
+        )}
+
         {/* Excerpt */}
         {entry.excerpt ? (
           <Typography
@@ -119,11 +128,11 @@ export default function JournalEntryCard({
           >
             {entry.excerpt}
           </Typography>
-        ) : (
+        ) : !entry.preview_images?.length ? (
           <Typography variant="body2" sx={{ color: 'text.disabled', fontStyle: 'italic' }}>
             Empty entry
           </Typography>
-        )}
+        ) : null}
 
         {/* Tags */}
         {entry.tags && entry.tags.length > 0 && (

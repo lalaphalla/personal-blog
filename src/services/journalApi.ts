@@ -7,6 +7,7 @@ export interface JournalAttachment {
   id: number
   kind: AttachmentKind
   url: string
+  thumbnail_url?: string | null
   filename: string
   mime_type: string | null
   size_bytes: number | null
@@ -34,6 +35,13 @@ export interface JournalEntry {
   attachments: JournalAttachment[]
 }
 
+export interface JournalThumbnail {
+  id: number
+  url: string
+  thumbnail_url?: string | null
+  filename: string
+}
+
 export interface JournalEntrySummary {
   id: number
   entry_date: string
@@ -47,6 +55,7 @@ export interface JournalEntrySummary {
   updated_at: string
   attachment_count: number
   has_photos: boolean
+  preview_images: JournalThumbnail[]
 }
 
 export interface JournalPrompt {

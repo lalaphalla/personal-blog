@@ -33,6 +33,7 @@ import {
   toggleFavoriteNote,
   unarchiveNote,
   updateNote,
+  type Note,
 } from '../../services/notesApi'
 
 type SaveStatus = 'idle' | 'dirty' | 'saving' | 'saved' | 'error'
@@ -75,11 +76,21 @@ export default function NoteEditorForm({
 }: NoteEditorFormProps) {
   const queryClient = useQueryClient()
 
-  const [title, setTitle] = useState('')
-  const [content, setContent] = useState('')
-  const [tags, setTags] = useState<string[]>([])
-  const [notebookId, setNotebookId] = useState<number | null>(defaultNotebookId ?? null)
+  // Seed from the query cache so a warm-cache mount paints complete on the first
+  // frame (the editor is mount-only and cannot be filled in later).
+  const cachedNote = initialNoteId
+    ? queryClient.getQueryData<Note>(['admin', 'notes', initialNoteId])
+    : undefined
+
+  const [title, setTitle] = useState(cachedNote?.title ?? '')
+  const [content, setContent] = useState(cachedNote?.content ?? '')
+  const [tags, setTags] = useState<string[]>(cachedNote?.tags ?? [])
+  const [notebookId, setNotebookId] = useState<number | null>(
+    cachedNote ? cachedNote.notebook_id : (defaultNotebookId ?? null),
+  )
   const [editorMode, setEditorMode] = useState<'live' | 'standard'>('live')
+  // The mount-only editor may only render once `content` holds real note text.
+  const [contentLoaded, setContentLoaded] = useState(() => !initialNoteId || Boolean(cachedNote))
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle')
   const [saveError, setSaveError] = useState<string | null>(null)
   const [currentNoteId, setCurrentNoteId] = useState<number | undefined>(initialNoteId)
@@ -106,7 +117,7 @@ export default function NoteEditorForm({
     queryFn: listNotebooks,
   })
 
-  const { data: note, isPending: isNotePending } = useQuery({
+  const { data: note, isPending: isNotePending, isError: isNoteError } = useQuery({
     queryKey: ['admin', 'notes', initialNoteId],
     queryFn: () => getNote(initialNoteId!),
     enabled: Boolean(initialNoteId),
@@ -126,6 +137,7 @@ export default function NoteEditorForm({
       note.tags || [],
     )
     loadedRef.current = true
+    setContentLoaded(true)
   }, [note, initialNoteId])
 
   const persist = async (): Promise<{ ok: boolean; id?: number }> => {
@@ -493,9 +505,20 @@ export default function NoteEditorForm({
           </Box>
           <Divider />
           <Box sx={{ px: { xs: 2.25, md: compact ? 4 : 5.5 }, py: { xs: 2.5, md: compact ? 3 : 3.5 } }}>
-            {editorMode === 'live' ? (
+            {!contentLoaded ? (
+              isNoteError ? (
+                <Alert severity="error">Couldn't load this note. Go back and try again.</Alert>
+              ) : (
+                <Stack sx={{ alignItems: 'center', py: 6 }}>
+                  <Typography variant="body2" color="text.secondary">
+                    Loading note…
+                  </Typography>
+                </Stack>
+              )
+            ) : editorMode === 'live' ? (
+              // No inner key: note switches and the create transition are handled
+              // by the pane-level key — re-keying here resets the cursor to 0.
               <LiveMarkdownEditor
-                key={`${currentNoteId || 'new'}-live`}
                 initialContent={content}
                 onChange={(next) => {
                   setContent(next)

@@ -98,15 +98,32 @@ export function useJournalMutations() {
     queryClient.invalidateQueries({ queryKey: journalKeys.all })
   }
 
+  // One-way save: the entry cache is written from the mutation response, never refetched
+  // into the editor. Lists/calendar/timeline still refresh (they show last-edited times).
+  const invalidateExceptEntry = () => {
+    queryClient.invalidateQueries({
+      queryKey: journalKeys.all,
+      predicate: (query) => query.queryKey[2] !== 'entry',
+    })
+  }
+
   const createEntryMutation = useMutation({
     mutationFn: (data: JournalEntryInput) => createEntry(data),
-    onSuccess: invalidateAll,
+    onSuccess: (created) => {
+      // Seed the entry cache so the post-create navigate renders the form
+      // immediately (no spinner → no unmount mid-typing).
+      queryClient.setQueryData(journalKeys.entry(created.id), created)
+      invalidateExceptEntry()
+    },
   })
 
   const updateEntryMutation = useMutation({
     mutationFn: ({ id, data }: { id: number; data: Partial<JournalEntryInput> }) =>
       updateEntry(id, data),
-    onSuccess: invalidateAll,
+    onSuccess: (updated) => {
+      queryClient.setQueryData(journalKeys.entry(updated.id), updated)
+      invalidateExceptEntry()
+    },
   })
 
   const deleteEntryMutation = useMutation({

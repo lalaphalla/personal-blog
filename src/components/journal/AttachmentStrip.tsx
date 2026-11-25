@@ -29,30 +29,50 @@ export default function AttachmentStrip({
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
 
   const handleFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
+    const selected = Array.from(e.target.files ?? [])
+    if (selected.length === 0) return
 
-    if (!file.type.startsWith('image/')) {
-      setErrorMsg('Only image files (PNG, JPEG, GIF, WebP) are supported.')
+    const remaining = 20 - attachments.length
+    if (remaining <= 0) {
+      setErrorMsg('Maximum of 20 attachments per entry reached.')
+      if (fileInputRef.current) fileInputRef.current.value = ''
       return
     }
+
+    const filesToUpload = selected.slice(0, remaining)
+    const skippedForLimit = selected.length - filesToUpload.length
 
     try {
       setIsUploading(true)
       setErrorMsg(null)
-      // 1. Upload file to media server
-      const uploaded = await adminUploadImage(file)
-      // 2. Link attachment to journal entry
-      await onAddAttachment({
-        kind: 'image',
-        url: uploaded.url,
-        filename: uploaded.filename,
-        size_bytes: uploaded.size_bytes,
-        mime_type: file.type,
-      })
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Failed to upload photo'
-      setErrorMsg(msg)
+      const errors: string[] = []
+
+      for (const file of filesToUpload) {
+        if (!file.type.startsWith('image/')) {
+          errors.push(`${file.name}: only image files (PNG, JPEG, GIF, WebP) are supported.`)
+          continue
+        }
+        try {
+          const uploaded = await adminUploadImage(file)
+          await onAddAttachment({
+            kind: 'image',
+            url: uploaded.url,
+            filename: uploaded.filename,
+            size_bytes: uploaded.size_bytes,
+            mime_type: file.type,
+          })
+        } catch (err: unknown) {
+          const msg = err instanceof Error ? err.message : 'Failed to upload photo'
+          errors.push(`${file.name}: ${msg}`)
+        }
+      }
+
+      if (skippedForLimit > 0) {
+        errors.push(`Skipped ${skippedForLimit} photo(s) due to the 20-attachment limit.`)
+      }
+      if (errors.length > 0) {
+        setErrorMsg(errors.join(' '))
+      }
     } finally {
       setIsUploading(false)
       if (fileInputRef.current) fileInputRef.current.value = ''
@@ -73,6 +93,7 @@ export default function AttachmentStrip({
           ref={fileInputRef}
           type="file"
           accept="image/*"
+          multiple
           style={{ display: 'none' }}
           onChange={handleFileChange}
         />
@@ -124,8 +145,10 @@ export default function AttachmentStrip({
             >
               <Box
                 component="img"
-                src={att.url}
+                src={att.thumbnail_url || att.url}
                 alt={att.filename}
+                loading="lazy"
+                decoding="async"
                 sx={{
                   width: '100%',
                   height: '100%',

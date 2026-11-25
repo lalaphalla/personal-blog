@@ -4,7 +4,6 @@ import AccordionDetails from '@mui/material/AccordionDetails'
 import AccordionSummary from '@mui/material/AccordionSummary'
 import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
-import CircularProgress from '@mui/material/CircularProgress'
 import IconButton from '@mui/material/IconButton'
 import Paper from '@mui/material/Paper'
 import Stack from '@mui/material/Stack'
@@ -34,6 +33,13 @@ import type {
   Mood,
 } from '../../services/journalApi'
 import { getLocalTodayDateString } from '../../utils/journal'
+import {
+  clearDraft,
+  readDraft,
+  writeDraft,
+  type JournalDraft,
+  type JournalDraftData,
+} from '../../hooks/useJournalDraft'
 
 interface JournalEditorFormProps {
   initialData?: JournalEntry
@@ -44,6 +50,60 @@ interface JournalEditorFormProps {
   onToggleFavorite?: (id: number) => Promise<void>
   onAddAttachment?: (entryId: number, data: JournalAttachmentInput) => Promise<void>
   onDeleteAttachment?: (attachmentId: number) => Promise<void>
+}
+
+// --- Save / draft plumbing (module level so effects don't need them in deps) ---
+
+/** Stable string snapshot of the editable fields, for dirty checks. */
+function snapshotOf(fields: JournalDraftData): string {
+  return JSON.stringify(fields)
+}
+
+// is_favorite is deliberately NOT part of any save payload: the backend toggle is a
+// flip (`not entry.is_favorite`), so a concurrent update carrying it can race and
+// silently revert a ♥. The toggle endpoint is the sole writer (schema excludes unset).
+function payloadFrom(fields: JournalDraftData): JournalEntryInput {
+  return {
+    entry_date: fields.entryDate,
+    title: fields.title.trim(),
+    content: fields.content,
+    mood: fields.mood,
+    location: fields.location.trim() || null,
+    tags: fields.tags,
+    prompt_id: fields.promptId,
+    gratitude: fields.gratitude.trim() || null,
+    highlight: fields.highlight.trim() || null,
+    challenge: fields.challenge.trim() || null,
+    lesson: fields.lesson.trim() || null,
+  }
+}
+
+/**
+ * Pick the write-through draft worth restoring for this mount, if any.
+ * Existing entry: only when the draft is newer than the server copy
+ * (`savedAt > updated_at`); stale drafts are dropped. New entry: same requested
+ * date, and it must actually contain text (empty → nothing to restore).
+ */
+function pickRestoreDraft(
+  initialData: JournalEntry | undefined,
+  defaultDate?: string,
+): JournalDraft | null {
+  const scope = initialData
+    ? `entry.${initialData.id}`
+    : `new.${defaultDate || getLocalTodayDateString()}`
+  const draft = readDraft(scope)
+  if (!draft) return null
+  if (initialData) {
+    const serverAt = Date.parse(initialData.updated_at)
+    if (Number.isFinite(serverAt) && draft.savedAt > serverAt) return draft
+    clearDraft(scope) // server copy is newer → the insurance is stale garbage
+    return null
+  }
+  if (!draft.title.trim() && !draft.content.trim()) {
+    clearDraft(scope)
+    return null
+  }
+  return draft
 }
 
 export default function JournalEditorForm({
@@ -57,25 +117,41 @@ export default function JournalEditorForm({
   onDeleteAttachment,
 }: JournalEditorFormProps) {
   const isEditing = Boolean(initialData?.id)
+  const mountDate = initialData?.entry_date || defaultDate || getLocalTodayDateString()
 
-  const [entryDate, setEntryDate] = useState(
-    initialData?.entry_date || defaultDate || getLocalTodayDateString()
-  )
-  const [title, setTitle] = useState(initialData?.title || '')
-  const [content, setContent] = useState(initialData?.content || '')
-  const [mood, setMood] = useState<Mood | null>(initialData?.mood ?? null)
-  const [location, setLocation] = useState(initialData?.location || '')
-  const [tags, setTags] = useState<string[]>(initialData?.tags || [])
-  const [isFavorite, setIsFavorite] = useState(initialData?.is_favorite || false)
+  // The server copy at mount is the "last saved" baseline. A newer local draft, if
+  // any, is restored silently during the first render (Apple-style: never a prompt).
+  const serverFields: JournalDraftData = {
+    entryDate: mountDate,
+    title: initialData?.title || '',
+    content: initialData?.content || '',
+    mood: initialData?.mood ?? null,
+    location: initialData?.location || '',
+    tags: initialData?.tags || [],
+    isFavorite: initialData?.is_favorite || false,
+    gratitude: initialData?.gratitude || '',
+    highlight: initialData?.highlight || '',
+    challenge: initialData?.challenge || '',
+    lesson: initialData?.lesson || '',
+    promptId: initialData?.prompt_id ?? defaultPrompt?.id ?? null,
+  }
+  const [restoredDraft] = useState(() => pickRestoreDraft(initialData, defaultDate))
+  const initialFields = restoredDraft ?? serverFields
+
+  const [entryDate, setEntryDate] = useState(initialFields.entryDate)
+  const [title, setTitle] = useState(initialFields.title)
+  const [content, setContent] = useState(initialFields.content)
+  const [mood, setMood] = useState<Mood | null>(initialFields.mood)
+  const [location, setLocation] = useState(initialFields.location)
+  const [tags, setTags] = useState<string[]>(initialFields.tags)
+  const [isFavorite, setIsFavorite] = useState(initialFields.isFavorite)
 
   // Reflections
-  const [gratitude, setGratitude] = useState(initialData?.gratitude || '')
-  const [highlight, setHighlight] = useState(initialData?.highlight || '')
-  const [challenge, setChallenge] = useState(initialData?.challenge || '')
-  const [lesson, setLesson] = useState(initialData?.lesson || '')
-  const [promptId] = useState<number | null>(
-    initialData?.prompt_id ?? defaultPrompt?.id ?? null
-  )
+  const [gratitude, setGratitude] = useState(initialFields.gratitude)
+  const [highlight, setHighlight] = useState(initialFields.highlight)
+  const [challenge, setChallenge] = useState(initialFields.challenge)
+  const [lesson, setLesson] = useState(initialFields.lesson)
+  const [promptId] = useState<number | null>(initialFields.promptId)
 
   const [attachments, setAttachments] = useState<JournalAttachment[]>(
     initialData?.attachments || []
@@ -83,82 +159,197 @@ export default function JournalEditorForm({
 
   const [editorMode, setEditorMode] = useState<'live' | 'standard'>('live')
   const [savingStatus, setSavingStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
-  const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
+  const draftTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
   const isFirstRender = useRef(true)
+  const isSavingRef = useRef(false)
+  const pendingSaveRef = useRef(false)
+  // The id the form is actually saving to (adopted after the first create).
+  const entryIdRef = useRef<number | undefined>(initialData?.id)
+  // Insurance scope, fixed at mount (`entry.<id>` / `new.<date>`), moved to the
+  // entry scope once the first create lands.
+  const draftScopeRef = useRef<string>(
+    initialData ? `entry.${initialData.id}` : `new.${mountDate}`
+  )
+  const lastSavedRef = useRef<string>(snapshotOf(serverFields))
+  const latestFieldsRef = useRef<JournalDraftData>(initialFields)
+  const onSaveRef = useRef(onSave)
+  const runSaveRef = useRef<() => Promise<void>>(async () => { })
 
-  // Sync state if initialData changes
-  useEffect(() => {
-    if (initialData) {
-      setEntryDate(initialData.entry_date)
-      setTitle(initialData.title)
-      setContent(initialData.content)
-      setMood(initialData.mood)
-      setLocation(initialData.location || '')
-      setTags(initialData.tags || [])
-      setIsFavorite(initialData.is_favorite)
-      setGratitude(initialData.gratitude || '')
-      setHighlight(initialData.highlight || '')
-      setChallenge(initialData.challenge || '')
-      setLesson(initialData.lesson || '')
-      setAttachments(initialData.attachments || [])
-    }
-  }, [initialData])
-
-  // Prepare payload
-  const buildPayload = (): JournalEntryInput => ({
-    entry_date: entryDate,
-    title: title.trim(),
-    content,
-    mood,
-    location: location.trim() || null,
-    tags,
-    is_favorite: isFavorite,
-    prompt_id: promptId,
-    gratitude: gratitude.trim() || null,
-    highlight: highlight.trim() || null,
-    challenge: challenge.trim() || null,
-    lesson: lesson.trim() || null,
-  })
-
-  // Manual save handler
-  const handleManualSave = async () => {
-    try {
-      setSavingStatus('saving')
-      const saved = await onSave(buildPayload())
-      setSavingStatus('saved')
-      if (saved.attachments) {
-        setAttachments(saved.attachments)
-      }
-    } catch {
-      setSavingStatus('error')
-    }
-  }
-
-  // Autosave for existing entries (debounced)
+  // Autosave + invisible write-through, sharing one trigger (any field change):
+  //   - 300 ms: mirror unsaved fields into localStorage so refresh / tab close /
+  //     offline / a failed save can never destroy typing (never prompts).
+  //   - 1200 ms: create on first real input, then update forever after. The empty
+  //     guard lives in runSave (no phantom rows).
+  // The first run is skipped so nothing can clear a restored draft before it is read.
+  // Declared before the sync effect so latestFieldsRef is fresh when it dirty-checks.
   useEffect(() => {
     if (isFirstRender.current) {
       isFirstRender.current = false
+      return undefined
+    }
+    const fields: JournalDraftData = {
+      entryDate,
+      title,
+      content,
+      mood,
+      location,
+      tags,
+      isFavorite,
+      gratitude,
+      highlight,
+      challenge,
+      lesson,
+      promptId,
+    }
+    latestFieldsRef.current = fields
+    const dirty = snapshotOf(fields) !== lastSavedRef.current
+
+    window.clearTimeout(draftTimeoutRef.current)
+    window.clearTimeout(saveTimeoutRef.current)
+    if (!dirty) {
+      // Back to the saved state → the insurance is no longer needed, and a
+      // "Saving…" left over from the dirty period must not get stuck.
+      clearDraft(draftScopeRef.current)
+      setSavingStatus((s) => (s === 'saving' ? 'idle' : s))
+      return undefined
+    }
+    setSavingStatus('saving')
+    draftTimeoutRef.current = window.setTimeout(() => {
+      // Re-check at fire time: a save may have landed in the meantime.
+      if (snapshotOf(latestFieldsRef.current) !== lastSavedRef.current) {
+        writeDraft(draftScopeRef.current, latestFieldsRef.current)
+      }
+    }, 300)
+    saveTimeoutRef.current = window.setTimeout(() => {
+      void runSaveRef.current()
+    }, 1200)
+    return () => {
+      window.clearTimeout(draftTimeoutRef.current)
+      window.clearTimeout(saveTimeoutRef.current)
+    }
+  }, [
+    entryDate,
+    title,
+    content,
+    mood,
+    location,
+    tags,
+    isFavorite,
+    gratitude,
+    highlight,
+    challenge,
+    lesson,
+    promptId,
+  ])
+
+  // Adopt server state only when a *different* entry is loaded AND we are not dirty
+  // (the create transition delivers initialData while typing continues — local text
+  // wins). Same-entry refreshes stop at the id gate. Attachments are always adopted:
+  // they are server-managed and never typed locally.
+  const syncedEntryIdRef = useRef<number | undefined>(initialData?.id)
+  useEffect(() => {
+    if (!initialData) return
+    setAttachments(initialData.attachments || [])
+    if (syncedEntryIdRef.current === initialData.id) return
+    if (lastSavedRef.current !== snapshotOf(latestFieldsRef.current)) return
+    syncedEntryIdRef.current = initialData.id
+    setEntryDate(initialData.entry_date)
+    setTitle(initialData.title)
+    setContent(initialData.content)
+    setMood(initialData.mood)
+    setLocation(initialData.location || '')
+    setTags(initialData.tags || [])
+    setIsFavorite(initialData.is_favorite)
+    setGratitude(initialData.gratitude || '')
+    setHighlight(initialData.highlight || '')
+    setChallenge(initialData.challenge || '')
+    setLesson(initialData.lesson || '')
+  }, [initialData])
+
+  // One save path for the autosave timer, the manual Save button and the unmount
+  // flush. Always reads the freshest fields via latestFieldsRef, so a stale closure
+  // can never PUT old values.
+  const runSave = async (): Promise<void> => {
+    if (isSavingRef.current) {
+      pendingSaveRef.current = true // a save is in flight — follow up with the newest fields
       return
     }
-
-    if (!isEditing) return // Do not autosave creation to avoid phantom rows
-
-    if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current)
-
-    setSavingStatus('saving')
-    saveTimeoutRef.current = setTimeout(async () => {
-      try {
-        await onSave(buildPayload())
-        setSavingStatus('saved')
-      } catch {
-        setSavingStatus('error')
-      }
-    }, 1200)
-
-    return () => {
-      if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current)
+    const fields = latestFieldsRef.current
+    const isNew = entryIdRef.current === undefined
+    if (isNew && !fields.title.trim() && !fields.content.trim()) {
+      // Empty draft → never create a phantom row (type nothing → nothing saved).
+      setSavingStatus('idle')
+      return
     }
-  }, [entryDate, title, content, mood, location, tags, gratitude, highlight, challenge, lesson])
+    const sentSnapshot = snapshotOf(fields)
+    isSavingRef.current = true
+    setSavingStatus('saving')
+    try {
+      const saved = await onSaveRef.current(payloadFrom(fields))
+      lastSavedRef.current = sentSnapshot
+      if (saved.attachments) {
+        setAttachments(saved.attachments)
+      }
+      const stillDirty = snapshotOf(latestFieldsRef.current) !== sentSnapshot
+      if (isNew && saved.id) {
+        // First create landed: move the insurance draft to the entry scope.
+        const oldScope = draftScopeRef.current
+        entryIdRef.current = saved.id
+        draftScopeRef.current = `entry.${saved.id}`
+        if (stillDirty) {
+          writeDraft(draftScopeRef.current, latestFieldsRef.current)
+        } else {
+          clearDraft(oldScope)
+        }
+      } else if (!stillDirty) {
+        clearDraft(draftScopeRef.current)
+      }
+      setSavingStatus('saved')
+    } catch {
+      setSavingStatus('error')
+    } finally {
+      isSavingRef.current = false
+      if (pendingSaveRef.current) {
+        pendingSaveRef.current = false
+        void runSave()
+      }
+    }
+  }
+  useEffect(() => {
+    runSaveRef.current = runSave
+  })
+
+  useEffect(() => {
+    onSaveRef.current = onSave
+  }, [onSave])
+
+  // Manual save: flush the debounce first so a pending timer can't save twice.
+  const handleManualSave = () => {
+    window.clearTimeout(saveTimeoutRef.current)
+    void runSaveRef.current()
+  }
+
+  // Flush on unmount (journal-plan.md §187/547): never lose the last keystrokes.
+  // The write-through runs first and also covers new drafts — calling onSave there
+  // would create an entry and hijack the user's navigation with a redirect.
+  // Existing entries additionally get a best-effort PUT.
+  useEffect(() => {
+    return () => {
+      window.clearTimeout(saveTimeoutRef.current)
+      window.clearTimeout(draftTimeoutRef.current)
+      const fields = latestFieldsRef.current
+      const dirty = snapshotOf(fields) !== lastSavedRef.current
+      if (dirty) {
+        writeDraft(draftScopeRef.current, fields) // synchronous insurance
+      }
+      if (!dirty || isSavingRef.current) return // in-flight save already covers this
+      const id = entryIdRef.current
+      if (!id) return // new draft: the write-through covers it until the next visit
+      void onSaveRef.current(payloadFrom(fields)).catch(() => { }) // best-effort, no status updates
+    }
+  }, [])
 
   return (
     <Stack spacing={3.5} sx={{ width: '100%' }}>
@@ -201,12 +392,6 @@ export default function JournalEditorForm({
             </Tooltip>
           )}
 
-          {savingStatus === 'saving' && (
-            <Stack direction="row" spacing={0.5} sx={{ alignItems: 'center', color: 'text.secondary' }}>
-              <CircularProgress size={14} />
-              <Typography variant="caption">Saving...</Typography>
-            </Stack>
-          )}
           {savingStatus === 'saved' && (
             <Typography variant="caption" sx={{ color: 'success.main', fontWeight: 600 }}>
               Saved
@@ -345,8 +530,9 @@ export default function JournalEditorForm({
 
         <Box sx={{ p: 2, minHeight: 320 }}>
           {editorMode === 'live' ? (
+            // No inner key: entry switches remount the whole form via the page key,
+            // and re-keying here would reset the cursor on the create transition.
             <LiveMarkdownEditor
-              key={`${initialData?.id || 'new'}-live`}
               initialContent={content}
               onChange={setContent}
               minHeight={320}

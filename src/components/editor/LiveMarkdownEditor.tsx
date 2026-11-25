@@ -30,22 +30,9 @@ export default function LiveMarkdownEditor({
     onChangeRef.current = onChange
   }, [onChange])
 
-  // Keep editor document in sync if initialContent changes externally (e.g. async fetch / edit mode)
-  useEffect(() => {
-    const view = viewRef.current
-    if (!view) return
-
-    const currentDoc = view.state.doc.toString()
-    if (initialContent !== currentDoc) {
-      view.dispatch({
-        changes: {
-          from: 0,
-          to: currentDoc.length,
-          insert: initialContent,
-        },
-      })
-    }
-  }, [initialContent])
+  // NOTE: initialContent is mount-only — the editor owns its text while mounted
+  // (plan doc §5). External updates (note/entry switching) go through `key`, never
+  // by pushing new values in: doing so races the keystrokes and reverts typing.
 
   useEffect(() => {
     if (!containerRef.current) return
