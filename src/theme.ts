@@ -1,7 +1,9 @@
 import { createTheme } from '@mui/material/styles'
 
 export const theme = createTheme({
-  cssVariables: true,
+  cssVariables: {
+    colorSchemeSelector: 'data',
+  },
   colorSchemes: {
     light: {
       palette: {
@@ -14,6 +16,19 @@ export const theme = createTheme({
         background: { default: '#ffffff', paper: '#ffffff' },
         text: { primary: '#08060d', secondary: '#6b6375' },
         divider: '#e5e4e7',
+      },
+    },
+    dark: {
+      palette: {
+        primary: {
+          main: '#c084fc',
+          light: '#d8b4fe',
+          dark: '#9333ea',
+          contrastText: '#0b0a10',
+        },
+        background: { default: '#0f0e14', paper: '#181620' },
+        text: { primary: '#f4f2f7', secondary: '#a39bb0' },
+        divider: '#2b2836',
       },
     },
   },

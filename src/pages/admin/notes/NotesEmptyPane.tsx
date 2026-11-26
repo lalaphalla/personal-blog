@@ -27,7 +27,7 @@ export default function NotesEmptyPane() {
         alignItems: 'center',
         justifyContent: 'center',
         p: 3,
-        bgcolor: 'grey.50',
+        bgcolor: 'background.default',
       }}
     >
       <Stack sx={{ alignItems: 'center', width: '100%', maxWidth: 380 }}>

@@ -146,7 +146,7 @@ export default function NoteDetailPane({ noteId, scopePath, showBack = false }: 
         display: 'flex',
         flexDirection: 'column',
         minHeight: 0,
-        bgcolor: 'grey.50',
+        bgcolor: 'background.default',
       }}
     >
       <Stack

@@ -153,7 +153,7 @@ export default function NotesSidebar({
       sx={{
         height: '100%',
         overflowY: 'auto',
-        bgcolor: 'grey.50',
+        bgcolor: 'background.default',
         display: 'flex',
         flexDirection: 'column',
         py: 1,

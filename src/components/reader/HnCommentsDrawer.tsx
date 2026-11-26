@@ -195,7 +195,7 @@ export default function HnCommentsDrawer({
                   sx={{
                     p: 1.5,
                     borderRadius: 2,
-                    bgcolor: 'grey.50',
+                    bgcolor: 'action.hover',
                     whiteSpace: 'pre-line',
                     lineHeight: 1.6,
                   }}

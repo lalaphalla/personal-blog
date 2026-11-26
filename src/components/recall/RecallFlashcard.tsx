@@ -183,13 +183,13 @@ export default function RecallFlashcard({
                 '& pre': {
                   p: 1.5,
                   borderRadius: 2,
-                  bgcolor: 'grey.100',
+                  bgcolor: 'action.hover',
                   overflowX: 'auto',
                   fontSize: '0.85rem',
                 },
                 '& code': {
                   fontFamily: 'monospace',
-                  bgcolor: 'grey.100',
+                  bgcolor: 'action.hover',
                   borderRadius: 1,
                   px: 0.6,
                   py: 0.15,

@@ -33,6 +33,7 @@ import {
   RecallIcon,
 } from '../components/DocIcons'
 import { getMe, logout } from '../services/authApi'
+import ThemeToggleButton from '../components/ThemeToggleButton'
 
 const NAV_ITEMS = [
   { label: 'Dashboard', to: '/admin', icon: <LayoutDashboardIcon />, end: true },
@@ -104,7 +105,7 @@ function AdminLayout() {
                 : 0
 
   return (
-    <Box sx={{ minHeight: '100vh', bgcolor: 'grey.50', display: 'flex', flexDirection: 'column' }}>
+    <Box sx={{ minHeight: '100vh', bgcolor: 'background.default', display: 'flex', flexDirection: 'column' }}>
       <AppBar position="sticky" color="default" elevation={1}>
         <Toolbar sx={{ gap: 1 }}>
           <IconButton
@@ -142,6 +143,7 @@ function AdminLayout() {
             <Tab label="Reader" component={NavLink} to="/admin/reader" />
             <Tab label="Media" component={NavLink} to="/admin/media" />
           </Tabs>
+          <ThemeToggleButton />
           <Button
             component={RouterLink}
             to="/blog"

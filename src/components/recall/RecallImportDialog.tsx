@@ -138,7 +138,7 @@ export default function RecallImportDialog({
               sx={{
                 p: 2,
                 borderRadius: 2,
-                bgcolor: 'grey.50',
+                bgcolor: 'action.hover',
                 border: '1px solid',
                 borderColor: 'divider',
               }}
@@ -178,7 +178,7 @@ export default function RecallImportDialog({
               sx={{
                 p: 1.5,
                 borderRadius: 2,
-                bgcolor: 'grey.50',
+                bgcolor: 'action.hover',
                 border: '1px solid',
                 borderColor: 'divider',
               }}

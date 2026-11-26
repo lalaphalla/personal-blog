@@ -366,7 +366,7 @@ export default function NoteEditorForm({
           overflowY: compact ? 'auto' : 'visible',
           px: compact ? { xs: 1.5, md: 2.5 } : 0,
           py: compact ? { xs: 1.5, md: 2.5 } : 0,
-          bgcolor: compact ? 'grey.50' : 'transparent',
+          bgcolor: compact ? 'background.default' : 'transparent',
         }}
       >
         <Paper

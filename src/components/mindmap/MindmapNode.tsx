@@ -126,7 +126,7 @@ function MindmapNodeComponent({
             fontFamily: 'inherit',
             fontSize: isRoot ? '0.95rem' : '0.875rem',
             fontWeight: isRoot ? 700 : 500,
-            color: 'text.primary',
+            color: '#0f172a',
             p: 0,
           }}
         />
@@ -136,7 +136,7 @@ function MindmapNodeComponent({
           sx={{
             fontSize: isRoot ? '0.95rem' : '0.875rem',
             fontWeight: isRoot ? 700 : 500,
-            color: 'text.primary',
+            color: '#0f172a',
             wordBreak: 'break-word',
             textAlign: 'center',
             userSelect: 'none',

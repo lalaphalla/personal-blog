@@ -14,6 +14,7 @@ import Stack from '@mui/material/Stack'
 import Typography from '@mui/material/Typography'
 import { formatDate } from '../utils/format'
 import { listPosts } from '../services/blogApi'
+import ThemeToggleButton from '../components/ThemeToggleButton'
 import type { Post } from '../types/blog'
 import { alpha } from '@mui/material'
 
@@ -292,14 +293,21 @@ function BlogListPage() {
           pb: 3,
           borderBottom: 1,
           borderColor: 'divider',
+          display: 'flex',
+          alignItems: 'flex-start',
+          justifyContent: 'space-between',
+          gap: 2,
         }}
       >
-        <Typography variant="h1" component="h1" sx={{ mb: 1 }}>
-          Blog
-        </Typography>
-        <Typography color="text.secondary" sx={{ maxWidth: '52ch' }}>
-          Notes, guides, and stories about building for the web.
-        </Typography>
+        <Box>
+          <Typography variant="h1" component="h1" sx={{ mb: 1 }}>
+            Blog
+          </Typography>
+          <Typography color="text.secondary" sx={{ maxWidth: '52ch' }}>
+            Notes, guides, and stories about building for the web.
+          </Typography>
+        </Box>
+        <ThemeToggleButton />
       </Box>
 
       <Typography component="p" aria-live="polite" sx={srOnly}>

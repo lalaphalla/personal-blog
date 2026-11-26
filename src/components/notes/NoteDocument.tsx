@@ -79,7 +79,7 @@ const documentSx = {
     p: 2,
     borderRadius: 2,
     overflowX: 'auto',
-    bgcolor: 'grey.50',
+    bgcolor: 'action.hover',
     border: '1px solid',
     borderColor: 'divider',
     '& code': { bgcolor: 'transparent', p: 0 },
