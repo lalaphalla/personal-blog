@@ -31,10 +31,12 @@ import QuotesPage from './pages/admin/journal/QuotesPage'
 import RecallCardsPage from './pages/admin/recall/RecallCardsPage'
 import RecallReviewPage from './pages/admin/recall/RecallReviewPage'
 import ReaderPage from './pages/admin/reader/ReaderPage'
-import { theme } from './theme'
+import { ThemePresetProvider } from './context/ThemePresetContext'
+import { useThemePreset } from './hooks/useThemePreset'
 
+function AppThemed() {
+  const { theme } = useThemePreset()
 
-function App() {
   return (
     <ThemeProvider theme={theme} defaultMode="light">
       <CssBaseline />
@@ -86,6 +88,14 @@ function App() {
       </Routes>
       <GlobalQuerySnackbar />
     </ThemeProvider>
+  )
+}
+
+function App() {
+  return (
+    <ThemePresetProvider>
+      <AppThemed />
+    </ThemePresetProvider>
   )
 }
 
