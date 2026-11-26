@@ -21,6 +21,7 @@ interface RecallCardDialogProps {
   onClose: () => void
   onSubmit: (payload: RecallCardCreateInput | RecallCardUpdateInput) => Promise<void>
   initialCard?: RecallCard | null
+  prefill?: Partial<RecallCardCreateInput> | null
   existingDecks?: string[]
   isSubmitting?: boolean
 }
@@ -29,15 +30,20 @@ function RecallCardFormBody({
   onClose,
   onSubmit,
   initialCard,
+  prefill,
   existingDecks = [],
   isSubmitting = false,
 }: Omit<RecallCardDialogProps, 'open'>) {
-  const [front, setFront] = useState(initialCard?.front ?? '')
-  const [back, setBack] = useState(initialCard?.back ?? '')
-  const [hint, setHint] = useState(initialCard?.hint ?? '')
-  const [deck, setDeck] = useState(initialCard?.deck ?? 'General')
-  const [tagsRaw, setTagsRaw] = useState((initialCard?.tags ?? []).join(', '))
-  const [sourceUrl, setSourceUrl] = useState(initialCard?.source_url ?? '')
+  const [front, setFront] = useState(initialCard?.front ?? prefill?.front ?? '')
+  const [back, setBack] = useState(initialCard?.back ?? prefill?.back ?? '')
+  const [hint, setHint] = useState(initialCard?.hint ?? prefill?.hint ?? '')
+  const [deck, setDeck] = useState(initialCard?.deck ?? prefill?.deck ?? 'General')
+  const [tagsRaw, setTagsRaw] = useState(
+    (initialCard?.tags ?? prefill?.tags ?? []).join(', '),
+  )
+  const [sourceUrl, setSourceUrl] = useState(
+    initialCard?.source_url ?? prefill?.source_url ?? '',
+  )
   const [isSuspended, setIsSuspended] = useState(initialCard?.is_suspended ?? false)
 
   const handleSave = async () => {
@@ -182,7 +188,7 @@ export default function RecallCardDialog({ open, ...props }: RecallCardDialogPro
     <Dialog open={open} onClose={props.onClose} maxWidth="sm" fullWidth>
       {open && (
         <RecallCardFormBody
-          key={props.initialCard?.id ?? 'new'}
+          key={props.initialCard?.id ?? props.prefill?.front ?? 'new'}
           {...props}
         />
       )}

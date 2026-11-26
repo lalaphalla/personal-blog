@@ -29,6 +29,7 @@ import {
   MenuIcon,
   MindmapIcon,
   NewspaperIcon,
+  ReaderIcon,
   RecallIcon,
 } from '../components/DocIcons'
 import { getMe, logout } from '../services/authApi'
@@ -40,6 +41,7 @@ const NAV_ITEMS = [
   { label: 'Journal', to: '/admin/journal', icon: <BookOpenIcon />, end: false },
   { label: 'Mindmaps', to: '/admin/mindmaps', icon: <MindmapIcon />, end: false },
   { label: 'Recall', to: '/admin/recall', icon: <RecallIcon />, end: false },
+  { label: 'Reader', to: '/admin/reader', icon: <ReaderIcon />, end: false },
   { label: 'Media', to: '/admin/media', icon: <ImageIcon />, end: false },
 ]
 
@@ -95,9 +97,11 @@ function AdminLayout() {
           ? 4
           : pathname.startsWith('/admin/recall')
             ? 5
-            : pathname.startsWith('/admin/media')
+            : pathname.startsWith('/admin/reader')
               ? 6
-              : 0
+              : pathname.startsWith('/admin/media')
+                ? 7
+                : 0
 
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: 'grey.50', display: 'flex', flexDirection: 'column' }}>
@@ -135,6 +139,7 @@ function AdminLayout() {
             <Tab label="Journal" component={NavLink} to="/admin/journal" />
             <Tab label="Mindmaps" component={NavLink} to="/admin/mindmaps" />
             <Tab label="Recall" component={NavLink} to="/admin/recall" />
+            <Tab label="Reader" component={NavLink} to="/admin/reader" />
             <Tab label="Media" component={NavLink} to="/admin/media" />
           </Tabs>
           <Button

@@ -30,6 +30,7 @@ import MindmapListPage from './pages/admin/mindmap/MindmapListPage'
 import QuotesPage from './pages/admin/journal/QuotesPage'
 import RecallCardsPage from './pages/admin/recall/RecallCardsPage'
 import RecallReviewPage from './pages/admin/recall/RecallReviewPage'
+import ReaderPage from './pages/admin/reader/ReaderPage'
 import { theme } from './theme'
 
 
@@ -78,6 +79,7 @@ function App() {
           <Route path="mindmaps/:id" element={<MindmapEditorPage />} />
           <Route path="recall" element={<RecallReviewPage />} />
           <Route path="recall/cards" element={<RecallCardsPage />} />
+          <Route path="reader" element={<ReaderPage />} />
           <Route path="media" element={<MediaPage />} />
         </Route>
         <Route path="*" element={<Navigate to="/blog" replace />} />
