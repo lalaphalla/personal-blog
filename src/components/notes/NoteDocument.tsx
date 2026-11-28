@@ -24,6 +24,7 @@ import {
   TagIcon,
 } from '../DocIcons'
 import { markdownSx } from '../markdownSx'
+import { sharedMarkdownComponents } from '../markdownComponents'
 import type { Note } from '../../services/notesApi'
 import {
   buildOutline,
@@ -85,7 +86,7 @@ const documentSx = {
     '& code': { bgcolor: 'transparent', p: 0 },
   },
   '& img': { maxWidth: '100%', borderRadius: 2 },
-  '& table': { width: '100%', my: 2.5, borderCollapse: 'collapse', fontSize: '0.9em' },
+  '& table': { width: '100%', my: 0, borderCollapse: 'collapse', fontSize: '0.9em' },
 } as const
 
 /** Flatten rendered heading children back into plain text for anchor ids. */
@@ -99,6 +100,7 @@ function flattenText(children: ReactNode): string {
 }
 
 const markdownComponents: Components = {
+  ...sharedMarkdownComponents,
   h1: ({ children }) => <h1 id={slugify(flattenText(children))}>{children}</h1>,
   h2: ({ children }) => <h2 id={slugify(flattenText(children))}>{children}</h2>,
   h3: ({ children }) => <h3 id={slugify(flattenText(children))}>{children}</h3>,

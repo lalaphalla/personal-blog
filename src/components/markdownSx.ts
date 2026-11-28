@@ -40,7 +40,7 @@ export const markdownSx = {
   },
   '& table': {
     width: '100%',
-    my: 2,
+    my: 0,
     borderCollapse: 'collapse',
     fontSize: '0.9em',
   },

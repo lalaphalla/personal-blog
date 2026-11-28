@@ -14,6 +14,7 @@ import Typography from '@mui/material/Typography'
 import { formatDate } from '../utils/format'
 import { ApiError, getPostBySlug } from '../services/blogApi'
 import { markdownSx } from '../components/markdownSx'
+import { sharedMarkdownComponents } from '../components/markdownComponents'
 
 function BlogDetailPage() {
   const { slug } = useParams()
@@ -109,7 +110,9 @@ function BlogDetailPage() {
       )}
 
       <Box component="article" sx={{ mt: 1, ...markdownSx }}>
-        <Markdown remarkPlugins={[remarkGfm]}>{post.content}</Markdown>
+        <Markdown remarkPlugins={[remarkGfm]} components={sharedMarkdownComponents}>
+          {post.content}
+        </Markdown>
       </Box>
     </Container>
   )

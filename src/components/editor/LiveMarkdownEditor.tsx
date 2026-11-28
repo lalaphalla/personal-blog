@@ -3,7 +3,7 @@ import Box from '@mui/material/Box'
 import { defaultKeymap, history, historyKeymap } from '@codemirror/commands'
 import { markdown } from '@codemirror/lang-markdown'
 import { EditorState } from '@codemirror/state'
-import { EditorView, keymap, placeholder as cmPlaceholder } from '@codemirror/view'
+import { EditorView, drawSelection, keymap, placeholder as cmPlaceholder } from '@codemirror/view'
 import { editorTheme } from './extensions/editorTheme'
 import { createLivePreviewPlugin } from './extensions/livePreview'
 
@@ -39,6 +39,7 @@ export default function LiveMarkdownEditor({
 
     const extensions = [
       history(),
+      drawSelection(),
       keymap.of([...defaultKeymap, ...historyKeymap]),
       markdown(),
       createLivePreviewPlugin(),

@@ -12,6 +12,7 @@ import Markdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { EditIcon, EyeIcon } from '../DocIcons'
 import { markdownSx } from '../markdownSx'
+import { sharedMarkdownComponents } from '../markdownComponents'
 import { adminUploadImage } from '../../services/adminApi'
 import { getErrorMessage } from '../../config/queryClient'
 
@@ -150,7 +151,9 @@ function MarkdownEditor({ value, onChange, error, minRows = 16 }: MarkdownEditor
         >
           {value.trim() ? (
             <Box component="article" sx={markdownSx}>
-              <Markdown remarkPlugins={[remarkGfm]}>{value}</Markdown>
+              <Markdown remarkPlugins={[remarkGfm]} components={sharedMarkdownComponents}>
+                {value}
+              </Markdown>
             </Box>
           ) : (
             <Typography color="text.secondary">

@@ -13,9 +13,9 @@ export const editorTheme = EditorView.theme({
     outline: 'none',
   },
   '.cm-content': {
-    lineHeight: '1.7',
-    padding: '16px 4px',
-    caretColor: '#6366f1',
+    fontSize: '1rem',
+    lineHeight: '1.55',
+    padding: '12px 4px',
   },
   '.cm-line': {
     padding: '0',
@@ -26,7 +26,7 @@ export const editorTheme = EditorView.theme({
   },
   '&.cm-focused .cm-cursor': {
     borderLeftColor: '#6366f1',
-    borderLeftWidth: '2px',
+    borderLeftWidth: '1.5px',
   },
   '&.cm-focused .cm-selectionBackground, ::selection': {
     backgroundColor: 'rgba(99, 102, 241, 0.18) !important',
@@ -40,22 +40,17 @@ export const editorTheme = EditorView.theme({
     lineHeight: '1.25',
     fontWeight: '800',
     letterSpacing: '-0.02em',
-    paddingTop: '0.4em',
-    paddingBottom: '0.15em',
   },
   '.cm-header-2': {
     fontSize: '1.45rem',
     lineHeight: '1.3',
     fontWeight: '750',
     letterSpacing: '-0.015em',
-    paddingTop: '0.35em',
-    paddingBottom: '0.1em',
   },
   '.cm-header-3': {
     fontSize: '1.2rem',
     lineHeight: '1.35',
     fontWeight: '700',
-    paddingTop: '0.25em',
   },
   '.cm-header-4, .cm-header-5, .cm-header-6': {
     fontSize: '1.05rem',

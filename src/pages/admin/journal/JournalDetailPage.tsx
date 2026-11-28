@@ -25,6 +25,7 @@ import {
 } from '../../../components/DocIcons'
 import EmptyState from '../../../components/notes/EmptyState'
 import { markdownSx } from '../../../components/markdownSx'
+import { sharedMarkdownComponents } from '../../../components/markdownComponents'
 import {
   useJournalEntry,
   useJournalMutations,
@@ -258,7 +259,9 @@ export default function JournalDetailPage() {
             }}
           >
             {entry.content ? (
-              <Markdown remarkPlugins={[remarkGfm]}>{entry.content}</Markdown>
+              <Markdown remarkPlugins={[remarkGfm]} components={sharedMarkdownComponents}>
+                {entry.content}
+              </Markdown>
             ) : (
               <Typography variant="body1" sx={{ color: 'text.disabled', fontStyle: 'italic' }}>
                 No body content recorded for this entry.
