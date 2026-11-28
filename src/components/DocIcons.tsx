@@ -427,5 +427,42 @@ export function MoonIcon(props: SvgIconProps) {
   )
 }
 
+export function TasksIcon(props: SvgIconProps) {
+  return (
+    <StrokeIcon {...props}>
+      <rect x="3" y="3" width="18" height="18" rx="3" />
+      <path d="m8 12 2.5 2.5L16 9" />
+    </StrokeIcon>
+  )
+}
+
+export function HabitsIcon(props: SvgIconProps) {
+  return (
+    <StrokeIcon {...props}>
+      <path d="M12 2c.5 3.5-2 5.5-2 8.5a4 4 0 0 0 8 0c0-2.5-1.5-4.5-2.5-6 1.5 1 3.5 3 3.5 6.5a7 7 0 1 1-14 0c0-3.5 2.5-6.5 7-9Z" />
+    </StrokeIcon>
+  )
+}
+
+export function GoalsIcon(props: SvgIconProps) {
+  return (
+    <StrokeIcon {...props}>
+      <circle cx="12" cy="12" r="9" />
+      <circle cx="12" cy="12" r="5" />
+      <circle cx="12" cy="12" r="1.5" />
+    </StrokeIcon>
+  )
+}
+
+export function ExpensesIcon(props: SvgIconProps) {
+  return (
+    <StrokeIcon {...props}>
+      <rect x="2" y="5" width="20" height="14" rx="2" />
+      <path d="M2 10h20" />
+      <path d="M6 15h4" />
+    </StrokeIcon>
+  )
+}
+
 
 

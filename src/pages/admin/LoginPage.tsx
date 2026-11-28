@@ -62,7 +62,7 @@ function LoginPage() {
           loginMutation.mutate(values)
         })} sx={{ p: 4, display: 'flex', flexDirection: 'column', gap: 2 }}>
           <Typography variant="h5" component="h1" sx={{ mb: 1 }}>
-            Blog Admin
+            Muni
           </Typography>
 
           {formError ? (

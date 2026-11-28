@@ -31,6 +31,10 @@ import QuotesPage from './pages/admin/journal/QuotesPage'
 import RecallCardsPage from './pages/admin/recall/RecallCardsPage'
 import RecallReviewPage from './pages/admin/recall/RecallReviewPage'
 import ReaderPage from './pages/admin/reader/ReaderPage'
+import TasksPage from './pages/admin/tasks/TasksPage'
+import HabitsPage from './pages/admin/habits/HabitsPage'
+import GoalsPage from './pages/admin/goals/GoalsPage'
+import ExpensesPage from './pages/admin/expenses/ExpensesPage'
 import { ThemePresetProvider } from './context/ThemePresetContext'
 import { useThemePreset } from './hooks/useThemePreset'
 
@@ -82,6 +86,10 @@ function AppThemed() {
           <Route path="recall" element={<RecallReviewPage />} />
           <Route path="recall/cards" element={<RecallCardsPage />} />
           <Route path="reader" element={<ReaderPage />} />
+          <Route path="tasks" element={<TasksPage />} />
+          <Route path="habits" element={<HabitsPage />} />
+          <Route path="goals" element={<GoalsPage />} />
+          <Route path="expenses" element={<ExpensesPage />} />
           <Route path="media" element={<MediaPage />} />
         </Route>
         <Route path="*" element={<Navigate to="/blog" replace />} />

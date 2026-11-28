@@ -35,12 +35,32 @@ export interface RecallDeckStats {
   due: number
 }
 
+export interface RecallDailyActivity {
+  date: string
+  count: number
+  again_count: number
+}
+
 export interface RecallStats {
   due_today: number
   total_cards: number
   reviewed_today: number
   mastered_count: number
+  streak_days: number
+  total_reviews_all_time: number
+  accuracy_percent: number
+  daily_activity: RecallDailyActivity[]
   decks: RecallDeckStats[]
+}
+
+export interface RecallReviewedTodayItem {
+  log_id: number
+  card_id: number
+  front: string
+  deck: string
+  rating: RecallRating
+  new_interval_days: number
+  reviewed_at: string
 }
 
 export interface RecallCardCreateInput {
@@ -86,6 +106,10 @@ export function listDueRecallCards(params: { deck?: string; limit?: number } = {
   if (params.limit !== undefined) search.set('limit', String(params.limit))
   const qs = search.toString()
   return request<RecallCard[]>(`/admin/recall/due${qs ? `?${qs}` : ''}`)
+}
+
+export function listReviewedTodayRecallCards(): Promise<RecallReviewedTodayItem[]> {
+  return request<RecallReviewedTodayItem[]>('/admin/recall/reviewed-today')
 }
 
 export function listRecallCards(params: RecallListParams = {}): Promise<RecallCardListOut> {

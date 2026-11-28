@@ -10,6 +10,7 @@ import {
   importRecallCards,
   listDueRecallCards,
   listRecallCards,
+  listReviewedTodayRecallCards,
   purgeRecallCard,
   restoreRecallCard,
   reviewRecallCard,
@@ -25,6 +26,7 @@ export const recallKeys = {
   all: ['recall'] as const,
   stats: () => [...recallKeys.all, 'stats'] as const,
   due: (deck?: string) => [...recallKeys.all, 'due', deck ?? 'all'] as const,
+  reviewedToday: () => [...recallKeys.all, 'reviewedToday'] as const,
   lists: () => [...recallKeys.all, 'list'] as const,
   list: (params: RecallListParams) => [...recallKeys.lists(), params] as const,
 }
@@ -39,7 +41,14 @@ export function useRecallStats() {
 export function useRecallDue(deck?: string) {
   return useQuery({
     queryKey: recallKeys.due(deck),
-    queryFn: () => listDueRecallCards({ deck, limit: 100 }),
+    queryFn: () => listDueRecallCards({ deck, limit: 200 }),
+  })
+}
+
+export function useRecallReviewedToday() {
+  return useQuery({
+    queryKey: recallKeys.reviewedToday(),
+    queryFn: listReviewedTodayRecallCards,
   })
 }
 

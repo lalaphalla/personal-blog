@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link as RouterLink, NavLink, Outlet, Navigate, useLocation, useNavigate } from 'react-router'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import AppBar from '@mui/material/AppBar'
@@ -21,8 +21,10 @@ import Typography from '@mui/material/Typography'
 import { alpha } from '@mui/material/styles'
 import {
   BookOpenIcon,
-  ExternalLinkIcon,
+  ExpensesIcon,
   FileTextIcon,
+  GoalsIcon,
+  HabitsIcon,
   ImageIcon,
   LayoutDashboardIcon,
   LogOutIcon,
@@ -31,8 +33,11 @@ import {
   NewspaperIcon,
   ReaderIcon,
   RecallIcon,
+  TasksIcon,
 } from '../components/DocIcons'
+import SearchIcon from '@mui/icons-material/Search'
 import { getMe, logout } from '../services/authApi'
+import CommandPalette from '../components/CommandPalette'
 import ThemeToggleButton from '../components/ThemeToggleButton'
 
 const NAV_ITEMS = [
@@ -43,6 +48,10 @@ const NAV_ITEMS = [
   { label: 'Mindmaps', to: '/admin/mindmaps', icon: <MindmapIcon />, end: false },
   { label: 'Recall', to: '/admin/recall', icon: <RecallIcon />, end: false },
   { label: 'Reader', to: '/admin/reader', icon: <ReaderIcon />, end: false },
+  { label: 'Tasks', to: '/admin/tasks', icon: <TasksIcon />, end: false },
+  { label: 'Habits', to: '/admin/habits', icon: <HabitsIcon />, end: false },
+  { label: 'Goals', to: '/admin/goals', icon: <GoalsIcon />, end: false },
+  { label: 'Expenses', to: '/admin/expenses', icon: <ExpensesIcon />, end: false },
   { label: 'Media', to: '/admin/media', icon: <ImageIcon />, end: false },
 ]
 
@@ -51,6 +60,18 @@ function AdminLayout() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const [navOpen, setNavOpen] = useState(false)
+  const [cmdOpen, setCmdOpen] = useState(false)
+
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault()
+        setCmdOpen((prev) => !prev)
+      }
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [])
 
   const { data: user, isPending, isError } = useQuery({
     queryKey: ['admin', 'me'],
@@ -100,9 +121,17 @@ function AdminLayout() {
             ? 5
             : pathname.startsWith('/admin/reader')
               ? 6
-              : pathname.startsWith('/admin/media')
+              : pathname.startsWith('/admin/tasks')
                 ? 7
-                : 0
+                : pathname.startsWith('/admin/habits')
+                  ? 8
+                  : pathname.startsWith('/admin/goals')
+                    ? 9
+                    : pathname.startsWith('/admin/expenses')
+                      ? 10
+                      : pathname.startsWith('/admin/media')
+                        ? 11
+                        : 0
 
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: 'background.default', display: 'flex', flexDirection: 'column' }}>
@@ -127,7 +156,7 @@ function AdminLayout() {
               fontSize: { xs: '1.05rem', md: '1.25rem' },
             }}
           >
-            Admin
+            Muni
           </Typography>
           <Tabs
             value={tab}
@@ -141,8 +170,38 @@ function AdminLayout() {
             <Tab label="Mindmaps" component={NavLink} to="/admin/mindmaps" />
             <Tab label="Recall" component={NavLink} to="/admin/recall" />
             <Tab label="Reader" component={NavLink} to="/admin/reader" />
+            <Tab label="Tasks" component={NavLink} to="/admin/tasks" />
+            <Tab label="Habits" component={NavLink} to="/admin/habits" />
+            <Tab label="Goals" component={NavLink} to="/admin/goals" />
+            <Tab label="Expenses" component={NavLink} to="/admin/expenses" />
             <Tab label="Media" component={NavLink} to="/admin/media" />
           </Tabs>
+          <Button
+            size="small"
+            variant="outlined"
+            color="inherit"
+            startIcon={<SearchIcon fontSize="small" />}
+            onClick={() => setCmdOpen(true)}
+            aria-label="Open command palette"
+            sx={{
+              display: { xs: 'none', sm: 'inline-flex' },
+              borderColor: 'divider',
+              color: 'text.secondary',
+              textTransform: 'none',
+              px: 1.25,
+              mr: 0.5,
+            }}
+          >
+            ⌘K
+          </Button>
+          <IconButton
+            color="inherit"
+            aria-label="Open command palette"
+            onClick={() => setCmdOpen(true)}
+            sx={{ display: { xs: 'inline-flex', sm: 'none' } }}
+          >
+            <SearchIcon fontSize="small" />
+          </IconButton>
           <ThemeToggleButton />
           <Button
             component={RouterLink}
@@ -193,11 +252,11 @@ function AdminLayout() {
                 flexShrink: 0,
               }}
             >
-              B
+              M
             </Box>
             <Box sx={{ minWidth: 0 }}>
               <Typography variant="subtitle1" sx={{ fontWeight: 700, lineHeight: 1.2 }} noWrap>
-                Admin
+                Muni
               </Typography>
               <Typography variant="caption" color="text.secondary" noWrap>
                 {user.username}
@@ -236,17 +295,6 @@ function AdminLayout() {
           <Divider />
           <List sx={{ px: 1, py: 1 }}>
             <ListItemButton
-              component={RouterLink}
-              to="/blog"
-              onClick={() => setNavOpen(false)}
-              sx={{ borderRadius: 2 }}
-            >
-              <ListItemIcon sx={{ minWidth: 36, color: 'text.secondary' }}>
-                <ExternalLinkIcon />
-              </ListItemIcon>
-              <ListItemText primary="View blog" />
-            </ListItemButton>
-            <ListItemButton
               onClick={() => {
                 setNavOpen(false)
                 logoutMutation.mutate()
@@ -276,6 +324,7 @@ function AdminLayout() {
       >
         <Outlet />
       </Container>
+      <CommandPalette open={cmdOpen} onClose={() => setCmdOpen(false)} />
     </Box>
   )
 }
